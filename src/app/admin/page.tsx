@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { 
@@ -21,9 +21,13 @@ import {
   Mail, 
   ExternalLink,
   ChevronRight,
-  Filter
+  Filter,
+  UserCheck,
+  ShieldAlert,
+  RotateCw
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { getCurrentUser, signOutUser, UserProfile } from "@/lib/auth";
 
 interface VolunteerRow {
   id: string;
@@ -60,8 +64,21 @@ interface EventRow {
 export default function AdminPage() {
   const [activeTab, setActiveTab] = useState<"volunteers" | "donations" | "events" | "cms" | "subscribers">("volunteers");
   const [searchTerm, setSearchTerm] = useState("");
+  const [adminUser, setAdminUser] = useState<UserProfile | null>(null);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
-  // Sample real-time state for demonstration
+  const checkAuth = async () => {
+    setIsCheckingAuth(true);
+    const user = await getCurrentUser();
+    setAdminUser(user);
+    setIsCheckingAuth(false);
+  };
+
+  useEffect(() => {
+    checkAuth();
+  }, []);
+
+  // Real-time record state
   const [volunteers, setVolunteers] = useState<VolunteerRow[]>([
     {
       id: "VOL-001",
@@ -183,6 +200,132 @@ export default function AdminPage() {
     alert(`Exporting ${type} data as CSV. Download will begin shortly.`);
   };
 
+  if (isCheckingAuth) {
+    return (
+      <div className="flex flex-col relative min-h-screen items-center justify-center text-white">
+        <div className="fixed inset-0 -z-30 pointer-events-none select-none">
+          <Image
+            src="/images/bg2.jpg"
+            alt="Sierra Madre Rainforest Background"
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover object-center"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#06110a]/85 via-[#07160c]/80 to-[#040e06]/95" />
+        </div>
+        <div className="text-center space-y-4 p-8 rounded-3xl bg-[#0A1B11]/85 backdrop-blur-xl border border-emerald-500/25 shadow-2xl max-w-md mx-4">
+          <RotateCw className="w-8 h-8 text-emerald-400 animate-spin mx-auto" />
+          <h2 className="font-heading font-bold text-lg text-white">
+            Verifying Supabase Permissions
+          </h2>
+          <p className="text-xs text-slate-300">
+            Checking organization administrator privileges...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!adminUser || adminUser.role !== "admin") {
+    return (
+      <div className="flex flex-col relative min-h-screen items-center justify-center text-white p-4">
+        <div className="fixed inset-0 -z-30 pointer-events-none select-none">
+          <Image
+            src="/images/bg2.jpg"
+            alt="Sierra Madre Rainforest Background"
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover object-center"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#06110a]/85 via-[#07160c]/80 to-[#040e06]/95" />
+        </div>
+
+        <div className="max-w-lg w-full p-8 rounded-3xl bg-[#0A1B11]/90 backdrop-blur-xl border border-amber-500/30 shadow-2xl space-y-6 text-center">
+          <div className="w-16 h-16 rounded-full bg-amber-950/80 border border-amber-500/40 text-amber-400 flex items-center justify-center mx-auto shadow-inner">
+            <ShieldAlert className="w-8 h-8" />
+          </div>
+
+          <div className="space-y-2">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400 bg-amber-950/60 px-3 py-1 rounded-full border border-amber-500/20 inline-block">
+              Executive Staff Clearance Required
+            </span>
+            <h1 
+              style={{ fontFamily: 'var(--font-alice), "Alice", Georgia, serif', color: '#e1ffdd' }}
+              className="font-alice text-2xl sm:text-3xl font-normal uppercase tracking-tight"
+            >
+              Admin Stewardship Portal
+            </h1>
+            <p className="text-xs text-slate-300 leading-relaxed">
+              {adminUser ? (
+                <>
+                  Signed in as <strong className="text-white">{adminUser.email}</strong> (<span className="text-emerald-400 font-bold capitalize">{adminUser.role}</span>). This account does not yet have administrator rights.
+                </>
+              ) : (
+                "You must be signed in with an administrator account to access the operations command center."
+              )}
+            </p>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-black/50 border border-white/10 text-left text-xs text-slate-300 space-y-2">
+            <div className="font-bold text-amber-300 flex items-center gap-1.5">
+              <span>How to grant Admin role in Supabase:</span>
+            </div>
+            <ol className="list-decimal list-inside space-y-1 text-[11px] text-slate-300 leading-relaxed">
+              <li>Open your <strong>Supabase Project Dashboard</strong></li>
+              <li>Navigate to <strong>Authentication &rarr; Users</strong></li>
+              <li>Find this user and click <strong>Edit User / User Metadata</strong></li>
+              <li>Set <code className="text-emerald-300 font-mono">{`"role": "admin"`}</code> and save</li>
+            </ol>
+          </div>
+
+          <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3 text-xs">
+            {adminUser ? (
+              <>
+                <Button
+                  onClick={() => checkAuth()}
+                  className="w-full sm:w-auto bg-[#22C55E] hover:bg-[#16A34A] text-slate-950 font-bold py-2.5 px-4 rounded-xl flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <RotateCw className="w-3.5 h-3.5" />
+                  <span>Recheck Permissions</span>
+                </Button>
+                <Link
+                  href="/member/dashboard"
+                  className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold transition-colors text-center"
+                >
+                  Go to Member Portal
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => signOutUser()}
+                  className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-red-950/40 border border-red-500/30 text-red-300 hover:text-white font-bold transition-colors cursor-pointer text-center"
+                >
+                  Sign Out
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-[#22C55E] hover:bg-[#16A34A] text-slate-950 font-bold transition-colors text-center"
+                >
+                  Sign In to Admin Account &rarr;
+                </Link>
+                <Link
+                  href="/"
+                  className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold transition-colors text-center"
+                >
+                  Back to Website
+                </Link>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col relative min-h-screen">
       
@@ -226,13 +369,23 @@ export default function AdminPage() {
             </Link>
           </div>
 
-          <div className="flex items-center gap-3 text-xs">
+          <div className="flex items-center gap-2.5 text-xs">
+            {adminUser && (
+              <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-950/60 border border-emerald-500/30 text-emerald-300 font-medium">
+                <UserCheck className="w-3.5 h-3.5 text-emerald-400" />
+                <span className="truncate max-w-[150px]">{adminUser.fullName || adminUser.email}</span>
+                <span className="px-1.5 py-0.5 rounded text-[10px] bg-emerald-500/20 text-emerald-300 font-bold uppercase">
+                  {adminUser.role}
+                </span>
+              </div>
+            )}
+
             <Link
               href="/"
               className="px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white transition-all flex items-center gap-1.5 font-semibold"
             >
               <ExternalLink className="w-3.5 h-3.5 text-[#22C55E]" />
-              <span>Live Website</span>
+              <span className="hidden sm:inline">Live Website</span>
             </Link>
 
             <Link
@@ -240,16 +393,17 @@ export default function AdminPage() {
               className="px-3 py-1.5 rounded-full bg-[#2563EB]/20 hover:bg-[#2563EB]/40 border border-[#2563EB]/40 text-[#93C5FD] transition-all flex items-center gap-1.5 font-bold"
             >
               <Users className="w-3.5 h-3.5 text-[#3B82F6]" />
-              <span>Member Portal</span>
+              <span className="hidden sm:inline">Member Portal</span>
             </Link>
 
-            <Link
-              href="/login"
-              className="px-3 py-1.5 rounded-full bg-[#DC2626]/20 hover:bg-[#DC2626]/40 border border-[#DC2626]/40 text-red-300 hover:text-white transition-all flex items-center gap-1.5 font-bold"
+            <button
+              type="button"
+              onClick={() => signOutUser()}
+              className="px-3 py-1.5 rounded-full bg-[#DC2626]/20 hover:bg-[#DC2626]/40 border border-[#DC2626]/40 text-red-300 hover:text-white transition-all flex items-center gap-1.5 font-bold cursor-pointer"
             >
               <LogOut className="w-3.5 h-3.5 text-[#EF4444]" />
               <span>Sign Out</span>
-            </Link>
+            </button>
           </div>
 
         </div>

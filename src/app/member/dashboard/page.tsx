@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { 
   User, 
@@ -17,9 +17,17 @@ import {
   Download
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { getCurrentUser, KKKUser } from "@/lib/auth";
 
 export default function MemberDashboardPage() {
   const [activeTab, setActiveTab] = useState<"volunteering" | "donations">("volunteering");
+  const [currentUser, setCurrentUser] = useState<KKKUser | null>(null);
+
+  useEffect(() => {
+    getCurrentUser().then((u) => {
+      if (u) setCurrentUser(u);
+    });
+  }, []);
 
   const sampleVolunteerActivities = [
     {
@@ -61,6 +69,9 @@ export default function MemberDashboardPage() {
     },
   ];
 
+  const displayName = currentUser?.fullName || "Eco-Steward";
+  const userInitial = displayName.charAt(0).toUpperCase() || "K";
+
   return (
     <div className="space-y-8 text-white">
       
@@ -68,7 +79,7 @@ export default function MemberDashboardPage() {
       <div className="p-6 sm:p-8 rounded-3xl bg-[#0A1B11]/85 backdrop-blur-xl border border-emerald-500/25 shadow-2xl flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="flex items-center gap-4">
           <div className="w-16 h-16 rounded-2xl bg-emerald-950/80 border-2 border-emerald-500/40 flex items-center justify-center text-emerald-300 font-black text-2xl font-heading shrink-0 shadow-lg">
-            M
+            {userInitial}
           </div>
           <div className="space-y-1">
             <div className="flex items-center gap-2">
@@ -76,14 +87,14 @@ export default function MemberDashboardPage() {
                 style={{ fontFamily: 'var(--font-alice), "Alice", Georgia, serif', color: '#e1ffdd' }}
                 className="font-alice text-2xl sm:text-3xl font-normal tracking-tight"
               >
-                Welcome back, Maria!
+                Welcome back, {displayName}!
               </h1>
               <span className="px-2.5 py-0.5 rounded-full bg-emerald-950 text-emerald-400 text-[10px] font-bold border border-emerald-500/30">
                 Active Eco-Steward
               </span>
             </div>
             <p className="text-xs sm:text-sm text-slate-300">
-              Member since August 2026 &bull; <strong className="text-white">6</strong> Volunteer Hours &bull; <strong className="text-white">₱1,500</strong> Carbon Offset Contributions
+              {currentUser?.email ? `${currentUser.email} • ` : ""}Member since 2026 &bull; <strong className="text-white">6</strong> Volunteer Hours &bull; <strong className="text-white">₱1,500</strong> Carbon Offset Contributions
             </p>
           </div>
         </div>

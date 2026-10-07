@@ -1,7 +1,10 @@
+"use client";
+
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, LogOut, User, Trees, Heart, Calendar } from "lucide-react";
+import { signOutUser } from "@/lib/auth";
 
 export default function MemberLayout({
   children,
@@ -56,13 +59,14 @@ export default function MemberLayout({
               <ArrowLeft className="w-3.5 h-3.5" />
               <span>Back to Main Website</span>
             </Link>
-            <Link
-              href="/login"
-              className="px-3 py-1.5 rounded-full bg-[#DC2626]/20 border border-[#DC2626]/40 text-red-300 hover:bg-[#DC2626]/40 hover:text-white font-bold flex items-center gap-1 transition-all"
+            <button
+              type="button"
+              onClick={() => signOutUser()}
+              className="px-3 py-1.5 rounded-full bg-[#DC2626]/20 border border-[#DC2626]/40 text-red-300 hover:bg-[#DC2626]/40 hover:text-white font-bold flex items-center gap-1 transition-all cursor-pointer"
             >
               <LogOut className="w-3.5 h-3.5" />
               <span>Sign Out</span>
-            </Link>
+            </button>
           </div>
         </div>
       </header>
