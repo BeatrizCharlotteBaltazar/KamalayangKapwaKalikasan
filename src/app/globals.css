@@ -1,0 +1,118 @@
+@import "tailwindcss";
+
+/* Custom Local Fonts */
+@font-face {
+  font-family: 'Alice';
+  src: url('/fonts/Alice-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'The Seasons';
+  src: url('/fonts/Fontspring-DEMO-theseasons-reg.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'The Seasons';
+  src: url('/fonts/Fontspring-DEMO-theseasons-bd.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@theme {
+  --color-ph-blue: #2563EB;
+  --color-ph-red: #DC2626;
+  --color-ph-yellow: #F59E0B;
+  --color-ph-yellow-gold: #FCD116;
+  --color-ph-white: #FFFFFF;
+
+  --color-brand-green: #22C55E;
+  --color-brand-brown: #8B5A2B;
+  --color-navbar-brown: #1E120A;
+  --color-forest-black: #06120A;
+  --color-forest-dark: #0A1B10;
+  --color-text-dark: #E2ECE4;
+  --color-text-muted: #94A398;
+  --color-alice-mint: #e1ffdd;
+}
+
+:root {
+  --alice-mint: #e1ffdd;
+  --navbar-brown: #1E120A;
+}
+
+html {
+  scroll-behavior: smooth;
+  color-scheme: dark;
+}
+
+body {
+  background-color: #07140B;
+  color: #E2ECE4;
+  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.font-alice {
+  font-family: var(--font-alice), 'Alice', Georgia, serif !important;
+}
+
+.font-the-seasons {
+  font-family: var(--font-the-seasons), 'The Seasons', Georgia, serif !important;
+}
+
+.text-alice-mint {
+  color: #e1ffdd !important;
+}
+
+/* Fixed background for Home Page with bg 2 */
+.bg-home-fixed {
+  background: 
+    linear-gradient(180deg, rgba(6, 17, 10, 0.65) 0%, rgba(8, 20, 13, 0.60) 40%, rgba(6, 17, 10, 0.88) 100%),
+    url('/images/bg2.jpg') center top / cover fixed no-repeat;
+}
+
+/* Background for Subpages with forest1 */
+.bg-subpage-forest1 {
+  background: 
+    linear-gradient(180deg, rgba(6, 17, 10, 0.78) 0%, rgba(8, 22, 14, 0.82) 45%, rgba(6, 17, 10, 0.94) 100%),
+    url('/images/forest1.jpg') center top / cover fixed no-repeat;
+}
+
+/* Dark Forest Glassmorphism */
+.glass-panel {
+  background: rgba(11, 28, 18, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(74, 222, 128, 0.16);
+}
+
+.glass-panel-subtle {
+  background: rgba(8, 22, 14, 0.65);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Custom dark scrollbar */
+::-webkit-scrollbar {
+  width: 9px;
+}
+::-webkit-scrollbar-track {
+  background: #061109;
+}
+::-webkit-scrollbar-thumb {
+  background: #1B4527;
+  border-radius: 6px;
+  border: 2px solid #061109;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #22C55E;
+}
