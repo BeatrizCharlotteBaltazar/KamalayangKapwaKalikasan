@@ -4,17 +4,17 @@ import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { 
-  Heart, 
-  QrCode, 
-  Copy, 
-  Check, 
-  Upload, 
-  ShieldCheck, 
-  Trees, 
-  Building2, 
-  AlertCircle, 
-  User, 
+import {
+  Heart,
+  QrCode,
+  Copy,
+  Check,
+  Upload,
+  ShieldCheck,
+  Trees,
+  Building2,
+  AlertCircle,
+  User,
   CheckCircle2,
   Sparkles,
   Lock
@@ -131,7 +131,7 @@ export default function DonatePage() {
   return (
     <div className="py-10 md:py-16 relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
-        
+
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto space-y-4">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/90 border border-slate-200 text-xs font-bold text-[#19241A] shadow-xs">
@@ -162,11 +162,10 @@ export default function DonatePage() {
                 key={p.amount}
                 type="button"
                 onClick={() => setFormData({ ...formData, amount: String(p.amount), custom_amount: "" })}
-                className={`p-5 rounded-2xl text-left border transition-all cursor-pointer flex flex-col justify-between ${
-                  isSelected
-                    ? "bg-[#C8102E] text-white border-[#C8102E] shadow-md scale-102"
-                    : "bg-white/95 border-slate-200/90 text-[#19241A] hover:border-[#C8102E]/40 hover:shadow-xs"
-                }`}
+                className={`p-5 rounded-2xl text-left border transition-all cursor-pointer flex flex-col justify-between ${isSelected
+                  ? "bg-[#C8102E] text-white border-[#C8102E] shadow-md scale-102"
+                  : "bg-white/95 border-slate-200/90 text-[#19241A] hover:border-[#C8102E]/40 hover:shadow-xs"
+                  }`}
               >
                 <div>
                   <div className="font-heading font-black text-2xl tracking-tight">
@@ -187,10 +186,10 @@ export default function DonatePage() {
 
         {/* 2-Column Grid: Payment Channels & Verification Form */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          
+
           {/* Left Column: GCash and Bank Details (5 cols) */}
           <div className="lg:col-span-5 space-y-6">
-            
+
             {/* GCash Box (Philippine Blue / Humanity accent) */}
             <div className="p-6 sm:p-7 rounded-3xl bg-white/95 backdrop-blur-sm border border-slate-200/90 shadow-xs space-y-4">
               <div className="flex items-center justify-between">
@@ -318,7 +317,7 @@ export default function DonatePage() {
           {/* Right Column: Donation Verification Form (7 cols) */}
           <div className="lg:col-span-7">
             <div className="p-6 sm:p-8 rounded-3xl bg-white/95 backdrop-blur-sm border border-slate-200/90 shadow-sm space-y-6">
-              
+
               <div className="border-b border-slate-100 pb-4">
                 <span className="text-xs font-bold uppercase tracking-wider text-[#C8102E] flex items-center gap-1.5">
                   <ShieldCheck className="w-4 h-4 text-[#C8102E]" />
@@ -340,7 +339,7 @@ export default function DonatePage() {
               )}
 
               <form onSubmit={handleSubmit} className="space-y-5">
-                
+
                 {/* Honeypot field for bot protection */}
                 <input
                   type="text"

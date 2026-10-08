@@ -230,6 +230,28 @@ export default function AdminDashboardPage() {
     };
   }, []);
 
+  // Listen for real-time submission updates across windows
+  useEffect(() => {
+    if (!isAdmin) return;
+    const handleUpdate = () => {
+      fetchVolunteers().then(setVolunteers).catch(() => {});
+      fetchAdminLiveStats().then(setStats).catch(() => {});
+    };
+    window.addEventListener("kkk_content_updated", handleUpdate);
+    window.addEventListener("storage", handleUpdate);
+    return () => {
+      window.removeEventListener("kkk_content_updated", handleUpdate);
+      window.removeEventListener("storage", handleUpdate);
+    };
+  }, [isAdmin]);
+
+  // Re-fetch volunteers whenever opening volunteers tab
+  useEffect(() => {
+    if (isAdmin && activeTab === "volunteers") {
+      fetchVolunteers().then(setVolunteers).catch(() => {});
+    }
+  }, [isAdmin, activeTab]);
+
   // 2. Load all dashboard tables & live stats from Supabase
   const loadDashboardData = async () => {
     setIsLoadingData(true);
@@ -362,6 +384,22 @@ export default function AdminDashboardPage() {
       showFeedback(`Event ${newStatus ? "published live" : "moved to drafts"}.`);
     } catch (err: any) {
       setErrorMessage(`Failed to update event status in Supabase: ${err?.message || "Database error"}`);
+    }
+  };
+
+  const handleUpdateEventStatus = async (item: AdminEvent, newStatus: AdminEvent["status"]) => {
+    setErrorMessage(null);
+    try {
+      await updateEvent(item.id, { status: newStatus });
+      setEvents(await fetchEvents());
+      refreshStatsOnly();
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new Event("kkk_content_updated"));
+        window.dispatchEvent(new Event("storage"));
+      }
+      showFeedback(`Event "${item.title}" marked as ${newStatus}!`);
+    } catch (err: any) {
+      setErrorMessage(`Failed to update event status: ${err?.message || "Database error"}`);
     }
   };
 
@@ -1425,9 +1463,57 @@ export default function AdminDashboardPage() {
                             {ev.isPublished ? "● Published" : "○ Draft"}
                           </button>
 
-                          <span className="text-[10px] text-emerald-400 font-bold">
-                            {ev.status}
-                          </span>
+                          {/* Interactive Event Lifecycle Status Switcher */}
+                          <div className="inline-flex items-center gap-1 bg-black/60 p-1 rounded-xl border border-white/10">
+                            <button
+                              type="button"
+                              onClick={() => handleUpdateEventStatus(ev, "upcoming")}
+                              className={`px-2 py-0.5 rounded-lg text-[10px] font-bold cursor-pointer transition-all ${
+                                ev.status === "upcoming"
+                                  ? "bg-blue-600 text-white shadow-sm"
+                                  : "text-slate-400 hover:text-white"
+                              }`}
+                              title="Mark as Upcoming"
+                            >
+                              Upcoming
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleUpdateEventStatus(ev, "ongoing")}
+                              className={`px-2 py-0.5 rounded-lg text-[10px] font-bold cursor-pointer transition-all ${
+                                ev.status === "ongoing"
+                                  ? "bg-amber-600 text-white shadow-sm animate-pulse"
+                                  : "text-slate-400 hover:text-white"
+                              }`}
+                              title="Mark as Ongoing"
+                            >
+                              ● Ongoing
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleUpdateEventStatus(ev, "completed")}
+                              className={`px-2 py-0.5 rounded-lg text-[10px] font-bold cursor-pointer transition-all ${
+                                ev.status === "completed" || ev.status === "past"
+                                  ? "bg-emerald-600 text-white shadow-sm"
+                                  : "text-slate-400 hover:text-white"
+                              }`}
+                              title="Mark as Finished / Completed"
+                            >
+                              ✓ Finished
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleUpdateEventStatus(ev, "cancelled")}
+                              className={`px-1.5 py-0.5 rounded-lg text-[10px] font-bold cursor-pointer transition-all ${
+                                ev.status === "cancelled"
+                                  ? "bg-red-600 text-white shadow-sm"
+                                  : "text-slate-500 hover:text-red-300"
+                              }`}
+                              title="Mark as Cancelled"
+                            >
+                              ✕
+                            </button>
+                          </div>
                         </div>
 
                         <h3 className="font-heading font-bold text-sm sm:text-base text-white truncate">

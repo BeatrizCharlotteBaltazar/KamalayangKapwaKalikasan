@@ -121,9 +121,10 @@ export default function GetInvolvedPage() {
       }
 
       setStatus("success");
-    } catch (_err: unknown) {
-      // In demo static mode, gracefully show success feedback
-      setStatus("success");
+    } catch (err: any) {
+      console.error("[Volunteer Submission Error]", err);
+      setErrorMessage(err?.message || "Failed to submit volunteer registration. Please review your information.");
+      setStatus("error");
     }
   };
 

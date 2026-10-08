@@ -8,7 +8,8 @@ import {
   MapPin, 
   ArrowRight, 
   Flame,
-  User 
+  User,
+  Heart 
 } from "lucide-react";
 import { fetchPublicNewsEvents } from "@/lib/supabase/publicStore";
 import { resolveAuthorName } from "@/lib/supabase/adminStore";
@@ -20,6 +21,8 @@ export default function NewsEventsPage() {
   const [newsEvents, setNewsEvents] = useState<NewsEvent[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const [likedPosts, setLikedPosts] = useState<string[]>([]);
+
   const loadData = () => {
     fetchPublicNewsEvents().then((items) => {
       setNewsEvents(items || []);
@@ -30,17 +33,58 @@ export default function NewsEventsPage() {
   useEffect(() => {
     loadData();
 
+    const syncLikes = () => {
+      if (typeof window !== "undefined") {
+        try {
+          const stored = localStorage.getItem("kkk_liked_announcements");
+          if (stored) {
+            const parsed = JSON.parse(stored);
+            if (Array.isArray(parsed)) setLikedPosts(parsed);
+          }
+        } catch {}
+      }
+    };
+    syncLikes();
+
     const handleUpdate = () => {
       loadData();
     };
 
     window.addEventListener("kkk_content_updated", handleUpdate);
-    window.addEventListener("storage", handleUpdate);
+    window.addEventListener("kkk_likes_updated", syncLikes);
+    window.addEventListener("storage", syncLikes);
     return () => {
       window.removeEventListener("kkk_content_updated", handleUpdate);
-      window.removeEventListener("storage", handleUpdate);
+      window.removeEventListener("kkk_likes_updated", syncLikes);
+      window.removeEventListener("storage", syncLikes);
     };
   }, []);
+
+  const handleToggleLike = (id: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setLikedPosts((prev) => {
+      const isAlready = prev.includes(id);
+      const next = isAlready ? prev.filter((p) => p !== id) : [...prev, id];
+      if (typeof window !== "undefined") {
+        try {
+          localStorage.setItem("kkk_liked_announcements", JSON.stringify(next));
+          window.dispatchEvent(new CustomEvent("kkk_likes_updated", { detail: { id, liked: !isAlready } }));
+        } catch {}
+      }
+      return next;
+    });
+  };
+
+  const getLikesCount = (postId: string) => {
+    let hash = 0;
+    for (let i = 0; i < postId.length; i++) {
+      hash = (hash << 5) - hash + postId.charCodeAt(i);
+      hash |= 0;
+    }
+    const base = Math.abs(hash % 16) + 5;
+    return base + (likedPosts.includes(postId) ? 1 : 0);
+  };
 
   const filteredItems = newsEvents.filter((item) => {
     if (filterType === "all") return true;
@@ -158,21 +202,37 @@ export default function NewsEventsPage() {
                       </p>
                     </div>
 
-                    <div className="pt-4 border-t border-white/10 flex items-center justify-between text-xs font-bold">
-                      <Link
-                        href={`/news-events/${item.slug}`}
-                        className="text-emerald-400 hover:underline inline-flex items-center gap-1"
-                      >
-                        <span>Read Story</span>
-                        <ArrowRight className="w-3.5 h-3.5" />
-                      </Link>
+                    <div className="pt-4 border-t border-white/10 flex items-center justify-between text-xs font-bold gap-2">
+                      <div className="flex items-center gap-3">
+                        <button
+                          type="button"
+                          onClick={(e) => handleToggleLike(item.id, e)}
+                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                            likedPosts.includes(item.id)
+                              ? "bg-red-950/80 text-red-400 border border-red-500/40"
+                              : "bg-white/5 text-slate-300 hover:bg-white/10 hover:text-red-400 border border-white/10"
+                          }`}
+                          title={likedPosts.includes(item.id) ? "Unlike" : "Like"}
+                        >
+                          <Heart className={`w-3.5 h-3.5 transition-transform active:scale-125 ${likedPosts.includes(item.id) ? "fill-red-500 text-red-500" : ""}`} />
+                          <span>{getLikesCount(item.id)}</span>
+                        </button>
+
+                        <Link
+                          href={`/news-events/${item.slug}`}
+                          className="text-emerald-400 hover:underline inline-flex items-center gap-1"
+                        >
+                          <span>Read Story</span>
+                          <ArrowRight className="w-3.5 h-3.5" />
+                        </Link>
+                      </div>
 
                       {isEvent && (
                         <Link
                           href="/get-involved"
-                          className="text-amber-400 hover:underline text-[11px]"
+                          className="text-amber-400 hover:underline text-[11px] shrink-0"
                         >
-                          Register to Attend &rarr;
+                          Register &rarr;
                         </Link>
                       )}
                     </div>

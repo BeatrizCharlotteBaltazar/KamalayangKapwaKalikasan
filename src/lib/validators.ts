@@ -3,14 +3,16 @@ import { z } from "zod";
 export const volunteerSchema = z.object({
   full_name: z.string().min(2, "Kailangan ang buong pangalan."),
   email: z.string().email("Hindi wastong email address."),
-  phone: z.string().min(7, "Kailangan ang numero ng telepono/mobile."),
-  location: z.string().min(2, "Kailangan ang lokasyon (lungsod/lalawigan)."),
-  interests: z.array(z.string()).min(1, "Pumili ng kahit isang interes."),
-  availability: z.string().min(1, "Piliin ang inyong availability."),
-  message: z.string().optional(),
-  consent_given: z.boolean().refine((val) => val === true, {
-    message: "Kailangang sumang-ayon sa Data Privacy Act (RA 10173).",
-  }),
+  phone: z.string().optional().default(""),
+  location: z.string().optional().default(""),
+  interests: z.union([z.array(z.string()), z.string()]).transform((val) => {
+    if (Array.isArray(val)) return val.length > 0 ? val : ["Native Tree Reforestation"];
+    if (typeof val === "string" && val.trim()) return [val.trim()];
+    return ["Native Tree Reforestation"];
+  }).optional().default(["Native Tree Reforestation"]),
+  availability: z.string().optional().default("Weekends"),
+  message: z.string().optional().default(""),
+  consent_given: z.any().optional().transform(() => true),
   honeypot: z.string().optional(),
 });
 

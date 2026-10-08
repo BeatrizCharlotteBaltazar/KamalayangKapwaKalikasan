@@ -44,7 +44,7 @@ export default function MemberLayout({
                 />
               </div>
               <span className="font-the-seasons  text-sm sm:text-base text-white">
-                Kapwa Kalikasan
+                Kamalayang Kapwa Kalikasan
               </span>
             </Link>
             <span className="hidden sm:inline-block text-xs bg-[#2563EB]/20 text-[#93C5FD] px-2.5 py-0.5 rounded-full font-bold border border-[#2563EB]/40">

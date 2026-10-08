@@ -177,7 +177,7 @@ export default function AboutPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="flex flex-wrap justify-center gap-6">
             {missionPathways.map((item) => {
               const style = pathwayStyles[item.id] || {
                 icon: Sparkles,
@@ -194,7 +194,7 @@ export default function AboutPage() {
               return (
                 <div
                   key={item.id}
-                  className={`group relative rounded-3xl p-7 bg-gradient-to-b from-[#092113]/90 via-[#06180E]/95 to-[#041009]/98 backdrop-blur-xl border ${style.border} ${style.hoverBorder} shadow-2xl transition-all duration-300 hover:-translate-y-2 flex flex-col justify-between overflow-hidden`}
+                  className={`w-full md:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] group relative rounded-3xl p-7 bg-gradient-to-b from-[#092113]/90 via-[#06180E]/95 to-[#041009]/98 backdrop-blur-xl border ${style.border} ${style.hoverBorder} shadow-2xl transition-all duration-300 hover:-translate-y-2 flex flex-col justify-between overflow-hidden`}
                 >
                   {/* Top Glowing Gradient Accent Bar */}
                   <div className={`absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r ${style.glow}`} />

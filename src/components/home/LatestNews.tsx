@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Calendar, MapPin, ArrowRight, Flame, Megaphone, User } from "lucide-react";
+import { Calendar, MapPin, ArrowRight, Flame, Megaphone, User, Heart } from "lucide-react";
 import { 
   fetchPublicHomeDispatches, 
   fetchPublicHomeUpcomingRallies, 
@@ -17,6 +17,7 @@ export function LatestNews() {
   const [dispatches, setDispatches] = useState<PublicDispatch[]>([]);
   const [rallies, setRallies] = useState<PublicRallyEvent[]>([]);
   const [loading, setLoading] = useState(true);
+  const [likedPosts, setLikedPosts] = useState<string[]>([]);
 
   useEffect(() => {
     let isMounted = true;
@@ -38,15 +39,60 @@ export function LatestNews() {
       loadContent();
     };
 
+    const syncLikes = () => {
+      if (typeof window !== "undefined") {
+        try {
+          const stored = localStorage.getItem("kkk_liked_announcements");
+          if (stored) {
+            const parsed = JSON.parse(stored);
+            if (Array.isArray(parsed)) setLikedPosts(parsed);
+          }
+        } catch {
+          // ignore
+        }
+      }
+    };
+    syncLikes();
+
     window.addEventListener("kkk_content_updated", handleUpdate);
-    window.addEventListener("storage", handleUpdate);
+    window.addEventListener("kkk_likes_updated", syncLikes);
+    window.addEventListener("storage", syncLikes);
 
     return () => {
       isMounted = false;
       window.removeEventListener("kkk_content_updated", handleUpdate);
-      window.removeEventListener("storage", handleUpdate);
+      window.removeEventListener("kkk_likes_updated", syncLikes);
+      window.removeEventListener("storage", syncLikes);
     };
   }, []);
+
+  const handleToggleLike = (id: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setLikedPosts((prev) => {
+      const isAlready = prev.includes(id);
+      const next = isAlready ? prev.filter((p) => p !== id) : [...prev, id];
+      if (typeof window !== "undefined") {
+        try {
+          localStorage.setItem("kkk_liked_announcements", JSON.stringify(next));
+          window.dispatchEvent(new CustomEvent("kkk_likes_updated", { detail: { id, liked: !isAlready } }));
+        } catch {
+          // ignore
+        }
+      }
+      return next;
+    });
+  };
+
+  const getLikesCount = (postId: string) => {
+    let hash = 0;
+    for (let i = 0; i < postId.length; i++) {
+      hash = (hash << 5) - hash + postId.charCodeAt(i);
+      hash |= 0;
+    }
+    const base = Math.abs(hash % 16) + 5;
+    return base + (likedPosts.includes(postId) ? 1 : 0);
+  };
 
   return (
     <section className="py-16 md:py-24 relative overflow-hidden text-white">
@@ -170,12 +216,26 @@ export function LatestNews() {
                     </div>
 
                     {/* Quick Action */}
-                    <div className="md:col-span-2 flex md:justify-end">
+                    <div className="md:col-span-2 flex items-center md:justify-end gap-2 flex-wrap">
+                      <button
+                        type="button"
+                        onClick={(e) => handleToggleLike(item.id, e)}
+                        className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                          likedPosts.includes(item.id)
+                            ? "bg-red-950/80 text-red-400 border border-red-500/40"
+                            : "bg-white/5 text-slate-300 hover:bg-white/10 hover:text-red-400 border border-white/10"
+                        }`}
+                        title={likedPosts.includes(item.id) ? "Unlike dispatch" : "Like dispatch"}
+                      >
+                        <Heart className={`w-3.5 h-3.5 transition-transform active:scale-125 ${likedPosts.includes(item.id) ? "fill-red-500 text-red-500" : ""}`} />
+                        <span>{getLikesCount(item.id)}</span>
+                      </button>
+
                       <Link
                         href={`/news-events/${item.id}`}
-                        className="px-4 py-2 rounded-xl text-xs font-bold transition-all inline-flex items-center gap-1.5 bg-white/10 hover:bg-white/20 text-white cursor-pointer"
+                        className="px-3.5 py-2 rounded-xl text-xs font-bold transition-all inline-flex items-center gap-1 bg-white/10 hover:bg-white/20 text-white cursor-pointer"
                       >
-                        <span>Read Story</span>
+                        <span>Read</span>
                         <ArrowRight className="w-3.5 h-3.5" />
                       </Link>
                     </div>

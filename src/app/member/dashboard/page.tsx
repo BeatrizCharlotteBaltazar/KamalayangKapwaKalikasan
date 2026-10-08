@@ -106,9 +106,9 @@ export default function MemberDashboardPage() {
   const [likedPosts, setLikedPosts] = useState<string[]>([]);
 
   // Load announcements, events, and resources live from Supabase
-  const loadData = async () => {
+  const loadData = async (silent = false) => {
     try {
-      setLoading(true);
+      if (!silent) setLoading(true);
 
       const [annRes, evRes, resRes] = await Promise.all([
         supabase
@@ -284,8 +284,11 @@ export default function MemberDashboardPage() {
     }
 
     const handleUpdate = () => {
-      loadData();
+      loadData(true);
       loadUserRecords();
+    };
+
+    const handleLikesSync = () => {
       if (typeof window !== "undefined") {
         try {
           const stored = localStorage.getItem("kkk_liked_announcements");
@@ -300,11 +303,13 @@ export default function MemberDashboardPage() {
     };
 
     window.addEventListener("kkk_content_updated", handleUpdate);
-    window.addEventListener("storage", handleUpdate);
+    window.addEventListener("kkk_likes_updated", handleLikesSync);
+    window.addEventListener("storage", handleLikesSync);
 
     return () => {
       window.removeEventListener("kkk_content_updated", handleUpdate);
-      window.removeEventListener("storage", handleUpdate);
+      window.removeEventListener("kkk_likes_updated", handleLikesSync);
+      window.removeEventListener("storage", handleLikesSync);
     };
   }, [user?.email]);
 
@@ -315,7 +320,7 @@ export default function MemberDashboardPage() {
       if (typeof window !== "undefined") {
         try {
           localStorage.setItem("kkk_liked_announcements", JSON.stringify(next));
-          window.dispatchEvent(new Event("kkk_content_updated"));
+          window.dispatchEvent(new CustomEvent("kkk_likes_updated", { detail: { id, liked: !isAlreadyLiked } }));
         } catch {
           // ignore
         }
@@ -666,9 +671,21 @@ export default function MemberDashboardPage() {
                           </div>
                         )}
 
-                        <span className="px-2.5 py-0.5 rounded-full bg-blue-950 text-blue-300 text-[10px] font-bold border border-blue-500/40 inline-block">
-                          {ev.status.toUpperCase()}
-                        </span>
+                        {ev.status === "completed" || ev.status === "past" ? (
+                          <span className="px-2.5 py-0.5 rounded-full bg-emerald-950 text-emerald-300 text-[10px] font-bold border border-emerald-500/40 inline-flex items-center gap-1">
+                            <Check className="w-3 h-3 text-emerald-400" />
+                            <span>FINISHED / COMPLETED</span>
+                          </span>
+                        ) : ev.status === "ongoing" ? (
+                          <span className="px-2.5 py-0.5 rounded-full bg-amber-950 text-amber-300 text-[10px] font-bold border border-amber-500/40 inline-flex items-center gap-1.5 animate-pulse">
+                            <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                            <span>ONGOING NOW</span>
+                          </span>
+                        ) : (
+                          <span className="px-2.5 py-0.5 rounded-full bg-blue-950 text-blue-300 text-[10px] font-bold border border-blue-500/40 inline-block">
+                            UPCOMING
+                          </span>
+                        )}
 
                         <h3 className="font-heading font-extrabold text-base text-white leading-snug">
                           {ev.title}
@@ -690,28 +707,42 @@ export default function MemberDashboardPage() {
                         </p>
                       </div>
 
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setRsvpEvents((prev) =>
-                            isRsvp ? prev.filter((id) => id !== ev.id) : [...prev, ev.id]
-                          )
-                        }
-                        className={`w-full py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                          isRsvp
-                            ? "bg-emerald-600 text-slate-950 shadow-md"
-                            : "bg-blue-600 hover:bg-blue-500 text-white shadow-md"
-                        }`}
-                      >
-                        {isRsvp ? (
-                          <>
-                            <Check className="w-3.5 h-3.5" />
-                            <span>RSVP Confirmed</span>
-                          </>
-                        ) : (
-                          <span>RSVP Attendance</span>
-                        )}
-                      </button>
+                      {ev.status === "completed" || ev.status === "past" ? (
+                        <div className="w-full py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 bg-white/5 border border-white/10 text-slate-400 select-none">
+                          <Check className="w-3.5 h-3.5 text-emerald-400" />
+                          <span>Event Finished</span>
+                        </div>
+                      ) : ev.status === "ongoing" ? (
+                        <Link
+                          href="/get-involved"
+                          className="w-full py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 bg-amber-600 hover:bg-amber-500 text-white shadow-md transition-all cursor-pointer"
+                        >
+                          <span>⚡ Join Ongoing Mobilization</span>
+                        </Link>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setRsvpEvents((prev) =>
+                              isRsvp ? prev.filter((id) => id !== ev.id) : [...prev, ev.id]
+                            )
+                          }
+                          className={`w-full py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                            isRsvp
+                              ? "bg-emerald-600 text-slate-950 shadow-md"
+                              : "bg-blue-600 hover:bg-blue-500 text-white shadow-md"
+                          }`}
+                        >
+                          {isRsvp ? (
+                            <>
+                              <Check className="w-3.5 h-3.5" />
+                              <span>RSVP Confirmed</span>
+                            </>
+                          ) : (
+                            <span>RSVP Attendance</span>
+                          )}
+                        </button>
+                      )}
                     </div>
                   );
                 })}

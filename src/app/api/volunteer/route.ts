@@ -16,7 +16,8 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   try {
     const ip = req.headers.get("x-forwarded-for") || "anonymous-ip";
-    const rateCheck = checkRateLimit(`vol:${ip}`, 10, 60000);
+    const maxRequests = (ip === "anonymous-ip" || ip === "127.0.0.1" || ip.includes("::1")) ? 120 : 15;
+    const rateCheck = checkRateLimit(`vol:${ip}`, maxRequests, 60000);
     if (!rateCheck.success) {
       return NextResponse.json(
         { error: "Masyadong mabilis ang pagpapadala. Maghintay nang kaunti bago sumubok muli." },
@@ -26,8 +27,8 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json();
 
-    // Bot trap check
-    if (body.honeypot) {
+    // Bot trap check: only if actually filled with characters
+    if (typeof body.honeypot === "string" && body.honeypot.trim().length > 0) {
       return NextResponse.json({ success: true, message: "Registered." });
     }
 
