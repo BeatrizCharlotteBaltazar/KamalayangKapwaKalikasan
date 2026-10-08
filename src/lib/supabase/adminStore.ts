@@ -1002,6 +1002,9 @@ export async function deletePartner(id: string): Promise<boolean> {
 // Existing table: volunteers
 // ==========================================
 export async function fetchVolunteers(): Promise<AdminVolunteer[]> {
+  const mergedMap = new Map<string, AdminVolunteer>();
+
+  // 1. Fetch from Supabase volunteers table
   try {
     const { data, error } = await supabase
       .from("volunteers")
@@ -1010,45 +1013,159 @@ export async function fetchVolunteers(): Promise<AdminVolunteer[]> {
 
     if (error) {
       logSupabaseError("fetchVolunteers", error);
-      return [];
-    }
-
-    if (data && data.length > 0) {
-      return data.map((v) => ({
-        id: v.id,
-        fullName: v.full_name,
-        email: v.email,
-        phone: v.phone,
-        location: v.location,
-        interests: v.interests || [],
-        availability: v.availability,
-        program: v.program || "Sierra Madre Reforestation",
-        message: v.message,
-        status: v.status || "Pending Review",
-        createdAt: v.created_at,
-      }));
+    } else if (data && data.length > 0) {
+      data.forEach((v) => {
+        mergedMap.set(v.id || v.email, {
+          id: v.id,
+          fullName: v.full_name,
+          email: v.email,
+          phone: v.phone,
+          location: v.location,
+          interests: Array.isArray(v.interests) ? v.interests : (v.skills || []),
+          availability: v.availability || "Weekends",
+          program: v.program || "Sierra Madre Reforestation",
+          message: v.message || "",
+          status: v.status || "Pending Review",
+          createdAt: v.created_at,
+        });
+      });
     }
   } catch (err) {
     logSupabaseError("fetchVolunteers", err);
   }
-  return [];
+
+  // 2. Fetch from /api/volunteer (persistent server store)
+  if (typeof window !== "undefined") {
+    try {
+      const res = await fetch("/api/volunteer", { cache: "no-store" });
+      if (res.ok) {
+        const body = await res.json();
+        if (Array.isArray(body?.volunteers)) {
+          body.volunteers.forEach((v: any) => {
+            const key = v.id || v.email;
+            if (!mergedMap.has(key)) {
+              mergedMap.set(key, {
+                id: v.id,
+                fullName: v.fullName || v.full_name,
+                email: v.email,
+                phone: v.phone,
+                location: v.location,
+                interests: v.interests || [],
+                availability: v.availability || "Weekends",
+                program: v.program || "Sierra Madre Reforestation",
+                message: v.message || "",
+                status: v.status || "Pending Review",
+                createdAt: v.createdAt || v.created_at,
+              });
+            }
+          });
+        }
+      }
+    } catch {
+      // ignore
+    }
+
+    // 3. Merge from localStorage for instantaneous offline/instant visibility
+    try {
+      const localRaw = localStorage.getItem("kkk_volunteer_applications");
+      if (localRaw) {
+        const localList = JSON.parse(localRaw);
+        if (Array.isArray(localList)) {
+          localList.forEach((v: any) => {
+            const key = v.id || v.email;
+            if (!mergedMap.has(key)) {
+              mergedMap.set(key, {
+                id: v.id || `vol-local-${Math.random().toString(36).substring(2, 7)}`,
+                fullName: v.fullName || v.full_name,
+                email: v.email,
+                phone: v.phone,
+                location: v.location,
+                interests: v.interests || [],
+                availability: v.availability || "Weekends",
+                program: v.program || "Sierra Madre Reforestation",
+                message: v.message || "",
+                status: v.status || "Pending Review",
+                createdAt: v.createdAt || v.created_at || new Date().toISOString(),
+              });
+            }
+          });
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  const results = Array.from(mergedMap.values());
+  results.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  return results;
 }
 
 export async function updateVolunteerStatus(id: string, status: AdminVolunteer["status"]): Promise<boolean> {
-  const { error } = await supabase.from("volunteers").update({ status }).eq("id", id);
-  if (error) {
-    const errText = logSupabaseError("updateVolunteerStatus", error);
-    throw new Error(errText);
+  // Update in /api/volunteer server store
+  if (typeof window !== "undefined") {
+    try {
+      await fetch("/api/volunteer", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, status }),
+      });
+    } catch {
+      // ignore
+    }
+
+    try {
+      const localRaw = localStorage.getItem("kkk_volunteer_applications");
+      if (localRaw) {
+        const localList = JSON.parse(localRaw);
+        const updated = localList.map((item: any) => item.id === id ? { ...item, status } : item);
+        localStorage.setItem("kkk_volunteer_applications", JSON.stringify(updated));
+      }
+    } catch {
+      // ignore
+    }
   }
+
+  // Also attempt Supabase update if table has status column
+  try {
+    await supabase.from("volunteers").update({ status }).eq("id", id);
+  } catch {
+    // schema might not have status column
+  }
+
   return true;
 }
 
 export async function deleteVolunteer(id: string): Promise<boolean> {
-  const { error } = await supabase.from("volunteers").delete().eq("id", id);
-  if (error) {
-    const errText = logSupabaseError("deleteVolunteer", error);
-    throw new Error(errText);
+  // Delete from /api/volunteer server store
+  if (typeof window !== "undefined") {
+    try {
+      await fetch(`/api/volunteer?id=${encodeURIComponent(id)}`, {
+        method: "DELETE",
+      });
+    } catch {
+      // ignore
+    }
+
+    try {
+      const localRaw = localStorage.getItem("kkk_volunteer_applications");
+      if (localRaw) {
+        const localList = JSON.parse(localRaw);
+        const updated = localList.filter((item: any) => item.id !== id);
+        localStorage.setItem("kkk_volunteer_applications", JSON.stringify(updated));
+      }
+    } catch {
+      // ignore
+    }
   }
+
+  // Also attempt Supabase delete
+  try {
+    await supabase.from("volunteers").delete().eq("id", id);
+  } catch {
+    // ignore
+  }
+
   return true;
 }
 

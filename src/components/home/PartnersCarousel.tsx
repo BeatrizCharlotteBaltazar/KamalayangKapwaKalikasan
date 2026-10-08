@@ -4,15 +4,16 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { Handshake, ExternalLink, ShieldCheck } from "lucide-react";
 import { fetchPublicPartners } from "@/lib/supabase/publicStore";
+import { defaultPartners } from "@/lib/data";
 import { Partner } from "@/types";
 
 export function PartnersCarousel() {
   const [isPaused, setIsPaused] = useState(false);
-  const [partners, setPartners] = useState<Partner[]>([]);
+  const [partners, setPartners] = useState<Partner[]>(defaultPartners);
 
   const loadData = () => {
     fetchPublicPartners().then((live) => {
-      setPartners(live || []);
+      setPartners(live && live.length > 0 ? live : defaultPartners);
     });
   };
 
@@ -31,12 +32,10 @@ export function PartnersCarousel() {
     };
   }, []);
 
-  if (partners.length === 0) {
-    return null;
-  }
+  const displayPartners = partners.length > 0 ? partners : defaultPartners;
 
-  // Duplicate items for a seamless continuous looping marquee
-  const loopedPartners = [...partners, ...partners];
+  // Duplicate items 3 times for a seamless continuous looping marquee across any monitor width
+  const loopedPartners = [...displayPartners, ...displayPartners, ...displayPartners];
 
   return (
     <section

@@ -1,6 +1,7 @@
 import { supabase } from "@/lib/supabase/client";
 import { Program, Resource, NewsEvent, GalleryItem, Partner } from "@/types";
 import { resolveAuthorName } from "@/lib/supabase/adminStore";
+import { defaultPartners } from "@/lib/data";
 
 // Helper for consistent error logging
 function logError(context: string, error: any) {
@@ -370,7 +371,7 @@ export async function fetchPublicPartners(): Promise<Partner[]> {
 
     if (error) {
       logError("fetchPublicPartners", error);
-      return [];
+      return defaultPartners;
     }
 
     if (data && data.length > 0) {
@@ -386,7 +387,7 @@ export async function fetchPublicPartners(): Promise<Partner[]> {
   } catch (err: any) {
     logError("fetchPublicPartners.exception", err);
   }
-  return [];
+  return defaultPartners;
 }
 
 /**

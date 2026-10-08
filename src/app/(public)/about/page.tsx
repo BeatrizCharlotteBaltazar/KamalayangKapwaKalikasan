@@ -12,7 +12,13 @@ import {
   MapPin,
   CheckCircle2,
   Phone,
-  Mail
+  Mail,
+  GraduationCap,
+  Users,
+  HeartHandshake,
+  Handshake,
+  Megaphone,
+  Sparkles
 } from "lucide-react";
 import { 
   officersData, 
@@ -22,6 +28,68 @@ import {
 } from "@/lib/data";
 import { useSiteSettings } from "@/lib/siteSettings";
 import { Button } from "@/components/ui/button";
+
+const pathwayStyles: Record<string, {
+  icon: any;
+  color: string;
+  badge: string;
+  glow: string;
+  border: string;
+  hoverBorder: string;
+  btnBg: string;
+  btnHover: string;
+}> = {
+  "pathway-1": {
+    icon: GraduationCap,
+    color: "text-sky-400",
+    badge: "bg-sky-950/90 text-sky-300 border-sky-500/40",
+    glow: "from-sky-500/30 via-sky-500/10 to-transparent",
+    border: "border-sky-500/30",
+    hoverBorder: "hover:border-sky-400/70",
+    btnBg: "bg-sky-500/15 text-sky-200 border-sky-500/40",
+    btnHover: "hover:bg-sky-500 hover:text-slate-950",
+  },
+  "pathway-2": {
+    icon: Users,
+    color: "text-amber-400",
+    badge: "bg-amber-950/90 text-amber-300 border-amber-500/40",
+    glow: "from-amber-500/30 via-amber-500/10 to-transparent",
+    border: "border-amber-500/30",
+    hoverBorder: "hover:border-amber-400/70",
+    btnBg: "bg-amber-500/15 text-amber-200 border-amber-500/40",
+    btnHover: "hover:bg-amber-500 hover:text-slate-950",
+  },
+  "pathway-3": {
+    icon: HeartHandshake,
+    color: "text-rose-400",
+    badge: "bg-rose-950/90 text-rose-300 border-rose-500/40",
+    glow: "from-rose-500/30 via-rose-500/10 to-transparent",
+    border: "border-rose-500/30",
+    hoverBorder: "hover:border-rose-400/70",
+    btnBg: "bg-rose-500/15 text-rose-200 border-rose-500/40",
+    btnHover: "hover:bg-rose-500 hover:text-slate-950",
+  },
+  "pathway-4": {
+    icon: Handshake,
+    color: "text-yellow-400",
+    badge: "bg-yellow-950/90 text-yellow-300 border-yellow-500/40",
+    glow: "from-yellow-500/30 via-yellow-500/10 to-transparent",
+    border: "border-yellow-500/30",
+    hoverBorder: "hover:border-yellow-400/70",
+    btnBg: "bg-yellow-500/15 text-yellow-200 border-yellow-500/40",
+    btnHover: "hover:bg-yellow-500 hover:text-slate-950",
+  },
+  "pathway-5": {
+    icon: Megaphone,
+    color: "text-emerald-400",
+    badge: "bg-emerald-950/90 text-emerald-300 border-emerald-500/40",
+    glow: "from-emerald-500/30 via-emerald-500/10 to-transparent",
+    border: "border-emerald-500/30",
+    hoverBorder: "hover:border-emerald-400/70",
+    btnBg: "bg-emerald-500/15 text-emerald-200 border-emerald-500/40",
+    btnHover: "hover:bg-emerald-500 hover:text-slate-950",
+  },
+};
 
 export default function AboutPage() {
   const siteSettings = useSiteSettings();
@@ -110,36 +178,73 @@ export default function AboutPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {missionPathways.map((item) => (
-              <div
-                key={item.id}
-                className="p-6 rounded-2xl bg-[#08180E]/70 border border-white/10 hover:border-emerald-500/40 hover:bg-[#0C2214]/80 transition-all flex flex-col justify-between space-y-4"
-              >
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="font-heading font-extrabold text-xs px-2.5 py-1 rounded-lg bg-black/40 text-emerald-300 border border-white/5">
-                      Pathway {item.number}
-                    </span>
-                    <span className="text-[11px] font-bold text-amber-400">
-                      {item.tag}
-                    </span>
+            {missionPathways.map((item) => {
+              const style = pathwayStyles[item.id] || {
+                icon: Sparkles,
+                color: "text-emerald-400",
+                badge: "bg-emerald-950 text-emerald-300 border-emerald-500/40",
+                glow: "from-emerald-500/30 to-transparent",
+                border: "border-emerald-500/30",
+                hoverBorder: "hover:border-emerald-400",
+                btnBg: "bg-emerald-500/15 text-emerald-200 border-emerald-500/40",
+                btnHover: "hover:bg-emerald-500 hover:text-slate-950",
+              };
+              const IconComponent = style.icon;
+
+              return (
+                <div
+                  key={item.id}
+                  className={`group relative rounded-3xl p-7 bg-gradient-to-b from-[#092113]/90 via-[#06180E]/95 to-[#041009]/98 backdrop-blur-xl border ${style.border} ${style.hoverBorder} shadow-2xl transition-all duration-300 hover:-translate-y-2 flex flex-col justify-between overflow-hidden`}
+                >
+                  {/* Top Glowing Gradient Accent Bar */}
+                  <div className={`absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r ${style.glow}`} />
+
+                  {/* Watermark Large Number in Background */}
+                  <div className="absolute top-3 right-4 font-heading font-black text-7xl text-white/[0.04] select-none pointer-events-none group-hover:text-white/[0.08] transition-colors">
+                    {item.number}
                   </div>
 
-                  <h3 className="font-heading font-bold text-lg text-white leading-snug">
-                    {item.title}
-                  </h3>
+                  <div className="space-y-4 relative z-10">
+                    {/* Header Row: Icon + Tag Badge */}
+                    <div className="flex items-center justify-between gap-3">
+                      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center bg-black/50 border ${style.border} ${style.color} shadow-inner group-hover:scale-110 transition-transform`}>
+                        <IconComponent className="w-6 h-6 stroke-[2.2]" />
+                      </div>
 
-                  <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-                    {item.description}
-                  </p>
-                </div>
+                      <span className={`text-[10px] sm:text-[11px] font-black uppercase tracking-wider px-3 py-1 rounded-full border shadow-xs ${style.badge}`}>
+                        {item.tag}
+                      </span>
+                    </div>
 
-                <div className="pt-3 border-t border-white/10 flex items-center justify-between text-xs font-bold text-emerald-400">
-                  <span>Action Pillar</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
+                    {/* Pathway Title */}
+                    <div className="pt-1">
+                      <span className="text-[11px] font-mono font-bold tracking-widest uppercase text-slate-400 block mb-1">
+                        Pathway {item.number}
+                      </span>
+                      <h3 className="font-heading font-extrabold text-xl text-white leading-snug group-hover:text-emerald-300 transition-colors">
+                        {item.title}
+                      </h3>
+                    </div>
+
+                    {/* Description */}
+                    <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-normal">
+                      {item.description}
+                    </p>
+                  </div>
+
+                  {/* Interactive Action CTA Link */}
+                  <div className="pt-6 mt-4 border-t border-white/10 relative z-10">
+                    <Link
+                      href={item.href}
+                      className={`inline-flex items-center justify-between w-full px-4 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all border ${style.btnBg} ${style.btnHover} shadow-md`}
+                    >
+                      <span>{item.actionText}</span>
+                      <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                    </Link>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </section>
 

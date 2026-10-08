@@ -684,8 +684,8 @@ export default function AdminDashboardPage() {
               isPublished: formIsPublished,
               status: formIsPublished
                 ? (formDate && !isNaN(Date.parse(formDate)) && new Date(formDate).getTime() > Date.now()
-                    ? "upcoming"
-                    : "published")
+                  ? "upcoming"
+                  : "published")
                 : "draft",
               publishToMain,
               publishToMembers,
@@ -778,8 +778,8 @@ export default function AdminDashboardPage() {
               targetVolunteers: Number(formTargetVolunteers) || 100,
               status: formIsPublished
                 ? (formDate && !isNaN(Date.parse(formDate)) && new Date(formDate).getTime() > Date.now()
-                    ? "upcoming"
-                    : "published")
+                  ? "upcoming"
+                  : "published")
                 : "draft",
               imageUrl: formImageUrl,
               animalSpeciesId: finalSpeciesId,
@@ -1004,7 +1004,7 @@ export default function AdminDashboardPage() {
                   className="object-cover"
                 />
               </div>
-              <span className="font-heading font-extrabold text-sm sm:text-base text-white">
+              <span className="font-the-seasons  text-sm sm:text-base text-white">
                 Kamalayang Kapwa Kalikasan
               </span>
             </Link>
@@ -1191,11 +1191,10 @@ export default function AdminDashboardPage() {
                 key={tab.id}
                 type="button"
                 onClick={() => setActiveTab(tab.id as AdminTab)}
-                className={`px-3.5 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 cursor-pointer ${
-                  isActive
-                    ? "bg-[#25150B] text-[#e1ffdd] border border-[#8B5A2B] shadow-lg scale-102"
-                    : "bg-white/5 text-slate-300 hover:bg-white/10 border border-white/10 hover:text-white"
-                }`}
+                className={`px-3.5 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 cursor-pointer ${isActive
+                  ? "bg-[#25150B] text-[#e1ffdd] border border-[#8B5A2B] shadow-lg scale-102"
+                  : "bg-white/5 text-slate-300 hover:bg-white/10 border border-white/10 hover:text-white"
+                  }`}
               >
                 <Icon className={`w-4 h-4 ${isActive ? "text-[#e1ffdd]" : "text-slate-400"}`} />
                 <span>{tab.label}</span>
@@ -1282,11 +1281,10 @@ export default function AdminDashboardPage() {
                           <button
                             type="button"
                             onClick={() => handleTogglePublishAnnouncement(ann)}
-                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold border cursor-pointer transition-colors ${
-                              ann.isPublished
-                                ? "bg-emerald-900/60 text-emerald-300 border-emerald-500/40 hover:bg-emerald-800"
-                                : "bg-slate-800 text-slate-400 border-slate-600 hover:bg-slate-700"
-                            }`}
+                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold border cursor-pointer transition-colors ${ann.isPublished
+                              ? "bg-emerald-900/60 text-emerald-300 border-emerald-500/40 hover:bg-emerald-800"
+                              : "bg-slate-800 text-slate-400 border-slate-600 hover:bg-slate-700"
+                              }`}
                             title="Click to toggle Published / Draft"
                           >
                             {ann.isPublished ? "● Published" : "○ Draft"}
@@ -1418,11 +1416,10 @@ export default function AdminDashboardPage() {
                           <button
                             type="button"
                             onClick={() => handleTogglePublishEvent(ev)}
-                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold border cursor-pointer transition-colors ${
-                              ev.isPublished
-                                ? "bg-emerald-900/60 text-emerald-300 border-emerald-500/40 hover:bg-emerald-800"
-                                : "bg-slate-800 text-slate-400 border-slate-600 hover:bg-slate-700"
-                            }`}
+                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold border cursor-pointer transition-colors ${ev.isPublished
+                              ? "bg-emerald-900/60 text-emerald-300 border-emerald-500/40 hover:bg-emerald-800"
+                              : "bg-slate-800 text-slate-400 border-slate-600 hover:bg-slate-700"
+                              }`}
                             title="Click to toggle Published / Draft"
                           >
                             {ev.isPublished ? "● Published" : "○ Draft"}
@@ -1548,11 +1545,10 @@ export default function AdminDashboardPage() {
                           <button
                             type="button"
                             onClick={() => handleTogglePublishProgram(prog)}
-                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold border cursor-pointer transition-colors ${
-                              prog.isPublished
-                                ? "bg-emerald-900/60 text-emerald-300 border-emerald-500/40 hover:bg-emerald-800"
-                                : "bg-slate-800 text-slate-400 border-slate-600 hover:bg-slate-700"
-                            }`}
+                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold border cursor-pointer transition-colors ${prog.isPublished
+                              ? "bg-emerald-900/60 text-emerald-300 border-emerald-500/40 hover:bg-emerald-800"
+                              : "bg-slate-800 text-slate-400 border-slate-600 hover:bg-slate-700"
+                              }`}
                             title="Click to toggle Published / Draft"
                           >
                             {prog.isPublished ? "● Published" : "○ Draft"}
@@ -1676,11 +1672,10 @@ export default function AdminDashboardPage() {
                           <button
                             type="button"
                             onClick={() => handleTogglePublishResource(res)}
-                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold border cursor-pointer transition-colors ${
-                              res.isPublished
-                                ? "bg-emerald-900/60 text-emerald-300 border-emerald-500/40 hover:bg-emerald-800"
-                                : "bg-slate-800 text-slate-400 border-slate-600 hover:bg-slate-700"
-                            }`}
+                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold border cursor-pointer transition-colors ${res.isPublished
+                              ? "bg-emerald-900/60 text-emerald-300 border-emerald-500/40 hover:bg-emerald-800"
+                              : "bg-slate-800 text-slate-400 border-slate-600 hover:bg-slate-700"
+                              }`}
                             title="Click to toggle Published / Draft"
                           >
                             {res.isPublished ? "● Published" : "○ Draft"}
@@ -1781,11 +1776,10 @@ export default function AdminDashboardPage() {
                         <button
                           type="button"
                           onClick={() => handleTogglePublishGallery(gal)}
-                          className={`px-2 py-0.5 rounded-full text-[10px] font-bold border cursor-pointer backdrop-blur-sm ${
-                            gal.isPublished
-                              ? "bg-emerald-950/80 text-emerald-300 border-emerald-500/40"
-                              : "bg-slate-900/80 text-slate-400 border-slate-600"
-                          }`}
+                          className={`px-2 py-0.5 rounded-full text-[10px] font-bold border cursor-pointer backdrop-blur-sm ${gal.isPublished
+                            ? "bg-emerald-950/80 text-emerald-300 border-emerald-500/40"
+                            : "bg-slate-900/80 text-slate-400 border-slate-600"
+                            }`}
                         >
                           {gal.isPublished ? "Published" : "Draft"}
                         </button>
@@ -1881,24 +1875,43 @@ export default function AdminDashboardPage() {
                     <tr key={v.id} className="hover:bg-white/5 transition-colors">
                       <td className="py-4 px-6 font-semibold">
                         <span className="block text-white font-bold">{v.fullName}</span>
-                        {v.location && <span className="text-[10px] text-slate-400">{v.location}</span>}
+                        {v.location && <span className="text-[11px] text-emerald-300/80 block">{v.location}</span>}
+                        {v.createdAt && <span className="text-[10px] text-slate-400 block mt-0.5">Applied: {new Date(v.createdAt).toLocaleDateString()}</span>}
                       </td>
                       <td className="py-4 px-6">
-                        <span className="block text-slate-300">{v.email}</span>
-                        <span className="text-xs text-slate-400">{v.phone}</span>
+                        <span className="block text-slate-200">{v.email}</span>
+                        <span className="text-xs text-slate-400 font-mono">{v.phone}</span>
                       </td>
-                      <td className="py-4 px-6 text-emerald-300 font-medium">
-                        {v.program}
+                      <td className="py-4 px-6">
+                        <span className="font-bold text-white block text-xs">{v.program || "Sierra Madre Reforestation"}</span>
+                        {v.interests && v.interests.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-1.5 max-w-xs">
+                            {v.interests.map((int: string) => (
+                              <span key={int} className="px-2 py-0.5 rounded-full bg-emerald-950/80 text-[10px] text-emerald-300 border border-emerald-500/30">
+                                {int}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                        {v.availability && (
+                          <span className="text-[10px] text-amber-300/90 block mt-1 font-medium">
+                            Avail: {v.availability}
+                          </span>
+                        )}
+                        {v.message && (
+                          <p className="text-[11px] text-slate-300 italic mt-1 line-clamp-2 max-w-sm" title={v.message}>
+                            &ldquo;{v.message}&rdquo;
+                          </p>
+                        )}
                       </td>
                       <td className="py-4 px-6">
                         <span
-                          className={`px-2.5 py-1 rounded-full text-xs font-bold ${
-                            v.status === "Approved"
-                              ? "bg-emerald-950 text-emerald-400 border border-emerald-500/40"
-                              : v.status === "Rejected"
+                          className={`px-2.5 py-1 rounded-full text-xs font-bold ${v.status === "Approved"
+                            ? "bg-emerald-950 text-emerald-400 border border-emerald-500/40"
+                            : v.status === "Rejected"
                               ? "bg-red-950 text-red-400 border border-red-500/40"
                               : "bg-amber-950 text-amber-400 border border-amber-500/40"
-                          }`}
+                            }`}
                         >
                           {v.status}
                         </span>
@@ -2017,13 +2030,12 @@ export default function AdminDashboardPage() {
                       </td>
                       <td className="py-4 px-6">
                         <span
-                          className={`px-2.5 py-1 rounded-full text-xs font-bold ${
-                            d.status === "Verified"
-                              ? "bg-emerald-950 text-emerald-400 border border-emerald-500/40"
-                              : d.status === "Rejected"
+                          className={`px-2.5 py-1 rounded-full text-xs font-bold ${d.status === "Verified"
+                            ? "bg-emerald-950 text-emerald-400 border border-emerald-500/40"
+                            : d.status === "Rejected"
                               ? "bg-red-950 text-red-400 border border-red-500/40"
                               : "bg-amber-950 text-amber-400 border border-amber-500/40 animate-pulse"
-                          }`}
+                            }`}
                         >
                           {d.status}
                         </span>
@@ -2183,13 +2195,12 @@ export default function AdminDashboardPage() {
                         <span className="text-xs text-slate-400">&bull; {msg.email}</span>
                         {msg.phone && <span className="text-xs text-slate-400">&bull; {msg.phone}</span>}
                         <span
-                          className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                            msg.status === "Unread"
-                              ? "bg-amber-950 text-amber-300 border border-amber-500/40"
-                              : msg.status === "Resolved"
+                          className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${msg.status === "Unread"
+                            ? "bg-amber-950 text-amber-300 border border-amber-500/40"
+                            : msg.status === "Resolved"
                               ? "bg-emerald-950 text-emerald-300 border border-emerald-500/40"
                               : "bg-slate-800 text-slate-300 border border-slate-600"
-                          }`}
+                            }`}
                         >
                           {msg.status}
                         </span>
@@ -2638,11 +2649,10 @@ export default function AdminDashboardPage() {
             <div className="flex items-start justify-between border-b border-white/10 pb-4 gap-4">
               <div className="space-y-1">
                 <span
-                  className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
-                    editingItemId
-                      ? "bg-amber-950 text-amber-300 border border-amber-500/40"
-                      : "bg-emerald-950 text-emerald-300 border border-emerald-500/40"
-                  }`}
+                  className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${editingItemId
+                    ? "bg-amber-950 text-amber-300 border border-amber-500/40"
+                    : "bg-emerald-950 text-emerald-300 border border-emerald-500/40"
+                    }`}
                 >
                   {editingItemId ? "Edit Item" : "Create Item"}
                 </span>
@@ -2707,11 +2717,10 @@ export default function AdminDashboardPage() {
                         key={t.id}
                         type="button"
                         onClick={() => setPostModalType(t.id as PostModalType)}
-                        className={`p-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer border ${
-                          isSelected
-                            ? "bg-emerald-600 text-slate-950 border-emerald-400 shadow-md font-black"
-                            : "bg-white/5 text-slate-300 hover:bg-white/10 border-white/10"
-                        }`}
+                        className={`p-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer border ${isSelected
+                          ? "bg-emerald-600 text-slate-950 border-emerald-400 shadow-md font-black"
+                          : "bg-white/5 text-slate-300 hover:bg-white/10 border-white/10"
+                          }`}
                       >
                         <Icon className="w-3.5 h-3.5 shrink-0" />
                         <span className="truncate">{t.label}</span>
@@ -2733,11 +2742,10 @@ export default function AdminDashboardPage() {
               <button
                 type="button"
                 onClick={() => setFormIsPublished(!formIsPublished)}
-                className={`px-4 py-1.5 rounded-xl text-xs font-bold transition-colors border cursor-pointer ${
-                  formIsPublished
-                    ? "bg-emerald-600 text-slate-950 border-emerald-400"
-                    : "bg-slate-800 text-slate-300 border-slate-600"
-                }`}
+                className={`px-4 py-1.5 rounded-xl text-xs font-bold transition-colors border cursor-pointer ${formIsPublished
+                  ? "bg-emerald-600 text-slate-950 border-emerald-400"
+                  : "bg-slate-800 text-slate-300 border-slate-600"
+                  }`}
               >
                 {formIsPublished ? "Published ✓" : "Draft (Unpublished)"}
               </button>
@@ -2858,11 +2866,10 @@ export default function AdminDashboardPage() {
                           setFormImageUrl(animal.url);
                           setShowWildlifePicker(false);
                         }}
-                        className={`p-1 rounded-lg border text-left transition-all cursor-pointer flex flex-col items-center gap-1 ${
-                          formImageUrl === animal.url
-                            ? "bg-emerald-950 border-emerald-400 ring-2 ring-emerald-400/40"
-                            : "bg-white/5 border-white/10 hover:bg-white/10"
-                        }`}
+                        className={`p-1 rounded-lg border text-left transition-all cursor-pointer flex flex-col items-center gap-1 ${formImageUrl === animal.url
+                          ? "bg-emerald-950 border-emerald-400 ring-2 ring-emerald-400/40"
+                          : "bg-white/5 border-white/10 hover:bg-white/10"
+                          }`}
                         title={`${animal.name} (${animal.status})`}
                       >
                         <div className="relative w-full aspect-square rounded overflow-hidden bg-black">
@@ -3192,8 +3199,8 @@ export default function AdminDashboardPage() {
                   {isSavingPost
                     ? "Saving to Supabase..."
                     : editingItemId
-                    ? "Save Changes \u2192"
-                    : "Publish \u2192"}
+                      ? "Save Changes \u2192"
+                      : "Publish \u2192"}
                 </Button>
               </div>
             </form>

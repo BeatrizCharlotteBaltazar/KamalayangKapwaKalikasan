@@ -14,7 +14,7 @@ export default function MemberLayout({
 }) {
   return (
     <div className="min-h-screen flex flex-col text-white relative selection:bg-emerald-500 selection:text-black">
-      
+
       {/* Sticky Fixed Background: bg 2 for the Whole Member Dashboard */}
       <div className="fixed inset-0 -z-30 pointer-events-none select-none">
         <Image
@@ -43,7 +43,7 @@ export default function MemberLayout({
                   className="object-cover"
                 />
               </div>
-              <span className="font-heading font-extrabold text-sm sm:text-base text-white">
+              <span className="font-the-seasons  text-sm sm:text-base text-white">
                 Kapwa Kalikasan
               </span>
             </Link>

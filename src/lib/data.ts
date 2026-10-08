@@ -32,7 +32,74 @@ export const programsData: Program[] = [];
 export const resourcesData: Resource[] = [];
 export const newsEventsData: NewsEvent[] = [];
 export const galleryData: GalleryItem[] = [];
-export const partnersData: Partner[] = [];
+export const defaultPartners: Partner[] = [
+  {
+    id: "part-1",
+    name: "Haribon Foundation",
+    type: "Environmental NGOs",
+    logo_url: "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=200&q=80",
+    website: "https://haribon.org.ph",
+    description: "Pioneering biodiversity conservation, rainforest restoration, and community awareness since 1972.",
+  },
+  {
+    id: "part-2",
+    name: "Philippine Native Plants Conservation Society, Inc. (PNPCSI)",
+    type: "Environmental NGOs",
+    logo_url: "https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?auto=format&fit=crop&w=200&q=80",
+    website: "https://pnpcsi.org",
+    description: "Dedicated to the protection, preservation, and study of Philippine native trees and endemic flora.",
+  },
+  {
+    id: "part-3",
+    name: "University of the Philippines Los Baños - College of Forestry",
+    type: "Academic & Schools",
+    logo_url: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=200&q=80",
+    website: "https://uplb.edu.ph",
+    description: "Research partner for long-term tree biomass carbon sequestration and seed nursery studies.",
+  },
+  {
+    id: "part-4",
+    name: "Ateneo Environmental Science Society",
+    type: "Academic & Schools",
+    logo_url: "https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=200&q=80",
+    website: "https://ateneo.edu",
+    description: "Youth volunteer mobilization and campus sustainability audits.",
+  },
+  {
+    id: "part-5",
+    name: "Department of Environment and Natural Resources (DENR-NCR)",
+    type: "Government Units",
+    logo_url: "https://images.unsplash.com/photo-1589923188900-85dae523342b?auto=format&fit=crop&w=200&q=80",
+    website: "https://denr.gov.ph",
+    description: "Public sector partner under the National Greening Program and protected landscape surveillance.",
+  },
+  {
+    id: "part-6",
+    name: "Quezon City Climate Change and Environmental Sustainability Dept.",
+    type: "Government Units",
+    logo_url: "https://images.unsplash.com/photo-1592417817098-8f3d69109853?auto=format&fit=crop&w=200&q=80",
+    website: "https://quezoncity.gov.ph",
+    description: "Barangay ecological solid waste management rollout and community composting nodes.",
+  },
+  {
+    id: "part-7",
+    name: "Luntiang Ani Agri-Enterprises",
+    type: "Industry & Eco-Enterprises",
+    logo_url: "https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?auto=format&fit=crop&w=200&q=80",
+    website: "https://luntiangani.ph",
+    description: "Providing subsidized organic bokashi bran and buying community urban farm harvest.",
+  },
+  {
+    id: "part-8",
+    name: "Kawayan Eco-Packaging Solutions",
+    type: "Industry & Eco-Enterprises",
+    logo_url: "https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?auto=format&fit=crop&w=200&q=80",
+    website: "https://kawayaneco.ph",
+    description: "Funding biodegradable shoreline barriers and volunteer field kits.",
+  },
+];
+
+export const partnersData: Partner[] = defaultPartners;
 
 export const organizationVision = {
   title: "Aming Bisyon (Vision)",

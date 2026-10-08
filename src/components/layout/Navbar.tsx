@@ -27,7 +27,6 @@ const navItems = [
   { href: "/resources", label: "RESOURCES" },
   { href: "/news-events", label: "EVENTS" },
   { href: "/gallery", label: "GALLERY" },
-  { href: "/partners", label: "PARTNERS" },
   { href: "/contact", label: "CONTACT US" },
 ];
 
