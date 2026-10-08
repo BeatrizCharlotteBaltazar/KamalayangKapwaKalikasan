@@ -194,21 +194,16 @@ export default function AboutPage() {
               return (
                 <div
                   key={item.id}
-                  className={`w-full md:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] group relative rounded-3xl p-7 bg-gradient-to-b from-[#092113]/90 via-[#06180E]/95 to-[#041009]/98 backdrop-blur-xl border ${style.border} ${style.hoverBorder} shadow-2xl transition-all duration-300 hover:-translate-y-2 flex flex-col justify-between overflow-hidden`}
+                  className={`w-full md:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] group relative rounded-3xl p-6 sm:p-7 bg-gradient-to-b from-[#092113]/90 via-[#06180E]/95 to-[#041009]/98 backdrop-blur-xl border ${style.border} ${style.hoverBorder} shadow-xl transition-all duration-300 hover:-translate-y-1.5 flex flex-col justify-between overflow-hidden`}
                 >
                   {/* Top Glowing Gradient Accent Bar */}
-                  <div className={`absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r ${style.glow}`} />
+                  <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${style.glow}`} />
 
-                  {/* Watermark Large Number in Background */}
-                  <div className="absolute top-3 right-4 font-heading font-black text-7xl text-white/[0.04] select-none pointer-events-none group-hover:text-white/[0.08] transition-colors">
-                    {item.number}
-                  </div>
-
-                  <div className="space-y-4 relative z-10">
+                  <div className="space-y-3 relative z-10">
                     {/* Header Row: Icon + Tag Badge */}
                     <div className="flex items-center justify-between gap-3">
-                      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center bg-black/50 border ${style.border} ${style.color} shadow-inner group-hover:scale-110 transition-transform`}>
-                        <IconComponent className="w-6 h-6 stroke-[2.2]" />
+                      <div className={`w-11 h-11 rounded-2xl flex items-center justify-center bg-black/50 border ${style.border} ${style.color} shadow-inner group-hover:scale-105 transition-transform`}>
+                        <IconComponent className="w-5 h-5 stroke-[2.2]" />
                       </div>
 
                       <span className={`text-[10px] sm:text-[11px] font-black uppercase tracking-wider px-3 py-1 rounded-full border shadow-xs ${style.badge}`}>
@@ -217,14 +212,9 @@ export default function AboutPage() {
                     </div>
 
                     {/* Pathway Title */}
-                    <div className="pt-1">
-                      <span className="text-[11px] font-mono font-bold tracking-widest uppercase text-slate-400 block mb-1">
-                        Pathway {item.number}
-                      </span>
-                      <h3 className="font-heading font-extrabold text-xl text-white leading-snug group-hover:text-emerald-300 transition-colors">
-                        {item.title}
-                      </h3>
-                    </div>
+                    <h3 className="font-heading font-extrabold text-lg sm:text-xl text-white leading-snug group-hover:text-emerald-300 transition-colors pt-1">
+                      {item.title}
+                    </h3>
 
                     {/* Description */}
                     <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-normal">
@@ -233,7 +223,7 @@ export default function AboutPage() {
                   </div>
 
                   {/* Interactive Action CTA Link */}
-                  <div className="pt-6 mt-4 border-t border-white/10 relative z-10">
+                  <div className="pt-5 mt-4 border-t border-white/10 relative z-10">
                     <Link
                       href={item.href}
                       className={`inline-flex items-center justify-between w-full px-4 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all border ${style.btnBg} ${style.btnHover} shadow-md`}

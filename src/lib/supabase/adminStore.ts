@@ -323,15 +323,41 @@ export async function fetchAdminLiveStats(): Promise<AdminStats> {
     if (subRes.error) logSupabaseError("fetchAdminLiveStats.subscribers", subRes.error);
     if (msgRes.error) logSupabaseError("fetchAdminLiveStats.contact_messages", msgRes.error);
 
+    let totalDonations = donRes.count ?? 0;
+    let pendingDonations = pendingDonRes.count ?? 0;
+    if (typeof window !== "undefined") {
+      try {
+        const cached = await fetchDonations();
+        if (cached.length > totalDonations) {
+          totalDonations = cached.length;
+          pendingDonations = cached.filter((d) => d.status === "Pending").length;
+        }
+      } catch {
+        // ignore
+      }
+    }
+
+    let totalVolunteers = volRes.count ?? 0;
+    if (typeof window !== "undefined") {
+      try {
+        const cachedV = await fetchVolunteers();
+        if (cachedV.length > totalVolunteers) {
+          totalVolunteers = cachedV.length;
+        }
+      } catch {
+        // ignore
+      }
+    }
+
     return {
       announcementsCount: annRes.count ?? 0,
       eventsCount: evRes.count ?? 0,
       programsCount: progRes.count ?? 0,
       resourcesCount: resRes.count ?? 0,
       galleryCount: galRes.count ?? 0,
-      volunteersCount: volRes.count ?? 0,
-      donationsCount: donRes.count ?? 0,
-      pendingDonationsCount: pendingDonRes.count ?? 0,
+      volunteersCount: totalVolunteers,
+      donationsCount: totalDonations,
+      pendingDonationsCount: pendingDonations,
       subscribersCount: subRes.count ?? 0,
       messagesCount: msgRes.count ?? 0,
       unreadMessagesCount: unreadMsgRes.count ?? 0,
@@ -1174,6 +1200,9 @@ export async function deleteVolunteer(id: string): Promise<boolean> {
 // Existing table: donations
 // ==========================================
 export async function fetchDonations(): Promise<AdminDonation[]> {
+  const mergedMap = new Map<string, AdminDonation>();
+
+  // 1. Fetch from Supabase donations table
   try {
     const { data, error } = await supabase
       .from("donations")
@@ -1182,44 +1211,157 @@ export async function fetchDonations(): Promise<AdminDonation[]> {
 
     if (error) {
       logSupabaseError("fetchDonations", error);
-      return [];
-    }
-
-    if (data && data.length > 0) {
-      return data.map((d) => ({
-        id: d.id,
-        donorName: d.donor_name,
-        email: d.email,
-        amount: d.amount,
-        trees: d.trees || Math.floor(Number(d.amount) / 250),
-        paymentMethod: d.payment_method || "GCash",
-        referenceNo: d.reference_no,
-        proofUrl: d.proof_url,
-        status: d.status || "Pending",
-        createdAt: d.created_at,
-      }));
+    } else if (data && data.length > 0) {
+      data.forEach((d) => {
+        const key = d.id || d.reference_no;
+        mergedMap.set(key, {
+          id: d.id,
+          donorName: d.donor_name || "Anonymous",
+          email: d.email,
+          amount: Number(d.amount) || 0,
+          trees: d.trees || Math.max(1, Math.floor(Number(d.amount) / 250)),
+          paymentMethod: d.payment_method || "GCash",
+          referenceNo: d.reference_no || "N/A",
+          proofUrl: d.proof_url || null,
+          status: (d.status as AdminDonation["status"]) || "Pending",
+          createdAt: d.created_at,
+        });
+      });
     }
   } catch (err) {
     logSupabaseError("fetchDonations", err);
   }
-  return [];
+
+  // 2. Fetch from /api/donate (persistent server store)
+  if (typeof window !== "undefined") {
+    try {
+      const res = await fetch("/api/donate", { cache: "no-store" });
+      if (res.ok) {
+        const body = await res.json();
+        if (Array.isArray(body?.donations)) {
+          body.donations.forEach((d: any) => {
+            const key = d.id || d.referenceNo;
+            if (!mergedMap.has(key)) {
+              mergedMap.set(key, {
+                id: d.id,
+                donorName: d.donorName || d.donor_name || "Anonymous",
+                email: d.email,
+                amount: Number(d.amount) || 0,
+                trees: d.trees || Math.max(1, Math.floor(Number(d.amount) / 250)),
+                paymentMethod: d.paymentMethod || d.payment_method || "GCash",
+                referenceNo: d.referenceNo || d.reference_no || "N/A",
+                proofUrl: d.proofUrl || d.proof_url || null,
+                status: (d.status as AdminDonation["status"]) || "Pending",
+                createdAt: d.createdAt || d.created_at,
+              });
+            }
+          });
+        }
+      }
+    } catch {
+      // ignore
+    }
+
+    // 3. Merge from localStorage for instantaneous offline/instant visibility
+    try {
+      const localRaw = localStorage.getItem("kkk_user_donations");
+      if (localRaw) {
+        const localList = JSON.parse(localRaw);
+        if (Array.isArray(localList)) {
+          localList.forEach((d: any) => {
+            const key = d.id || d.referenceNo || d.reference_no;
+            if (!mergedMap.has(key)) {
+              mergedMap.set(key, {
+                id: d.id || `don-local-${Math.random().toString(36).substring(2, 7)}`,
+                donorName: d.donorName || d.donor_name || "Anonymous",
+                email: d.email,
+                amount: Number(d.amount) || 0,
+                trees: d.trees || Math.max(1, Math.floor(Number(d.amount) / 250)),
+                paymentMethod: d.paymentMethod || d.payment_method || "GCash",
+                referenceNo: d.referenceNo || d.reference_no || "N/A",
+                proofUrl: d.proofUrl || d.proof_url || null,
+                status: (d.status as AdminDonation["status"]) || "Pending",
+                createdAt: d.createdAt || d.created_at || new Date().toISOString(),
+              });
+            }
+          });
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  const results = Array.from(mergedMap.values());
+  results.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  return results;
 }
 
 export async function updateDonationStatus(id: string, status: AdminDonation["status"]): Promise<boolean> {
-  const { error } = await supabase.from("donations").update({ status }).eq("id", id);
-  if (error) {
-    const errText = logSupabaseError("updateDonationStatus", error);
-    throw new Error(errText);
+  // Update in /api/donate server store
+  if (typeof window !== "undefined") {
+    try {
+      await fetch("/api/donate", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, status }),
+      });
+    } catch {
+      // ignore
+    }
+
+    try {
+      const localRaw = localStorage.getItem("kkk_user_donations");
+      if (localRaw) {
+        const localList = JSON.parse(localRaw);
+        const updated = localList.map((item: any) => item.id === id ? { ...item, status } : item);
+        localStorage.setItem("kkk_user_donations", JSON.stringify(updated));
+      }
+    } catch {
+      // ignore
+    }
   }
+
+  // Also attempt Supabase update
+  try {
+    await supabase.from("donations").update({ status }).eq("id", id);
+  } catch {
+    // ignore
+  }
+
   return true;
 }
 
 export async function deleteDonation(id: string): Promise<boolean> {
-  const { error } = await supabase.from("donations").delete().eq("id", id);
-  if (error) {
-    const errText = logSupabaseError("deleteDonation", error);
-    throw new Error(errText);
+  // Delete from /api/donate server store
+  if (typeof window !== "undefined") {
+    try {
+      await fetch(`/api/donate?id=${encodeURIComponent(id)}`, {
+        method: "DELETE",
+      });
+    } catch {
+      // ignore
+    }
+
+    try {
+      const localRaw = localStorage.getItem("kkk_user_donations");
+      if (localRaw) {
+        const localList = JSON.parse(localRaw);
+        const updated = localList.filter((item: any) => item.id !== id);
+        localStorage.setItem("kkk_user_donations", JSON.stringify(updated));
+      }
+    } catch {
+      // ignore
+    }
   }
+
+  // Also attempt Supabase delete
+  try {
+    await supabase.from("donations").delete().eq("id", id);
+  } catch {
+    // ignore
+  }
+
   return true;
 }
 

@@ -235,6 +235,7 @@ export default function AdminDashboardPage() {
     if (!isAdmin) return;
     const handleUpdate = () => {
       fetchVolunteers().then(setVolunteers).catch(() => {});
+      fetchDonations().then(setDonations).catch(() => {});
       fetchAdminLiveStats().then(setStats).catch(() => {});
     };
     window.addEventListener("kkk_content_updated", handleUpdate);
@@ -245,10 +246,14 @@ export default function AdminDashboardPage() {
     };
   }, [isAdmin]);
 
-  // Re-fetch volunteers whenever opening volunteers tab
+  // Re-fetch whenever opening volunteers or donations tab
   useEffect(() => {
-    if (isAdmin && activeTab === "volunteers") {
-      fetchVolunteers().then(setVolunteers).catch(() => {});
+    if (isAdmin) {
+      if (activeTab === "volunteers") {
+        fetchVolunteers().then(setVolunteers).catch(() => {});
+      } else if (activeTab === "donations") {
+        fetchDonations().then(setDonations).catch(() => {});
+      }
     }
   }, [isAdmin, activeTab]);
 
@@ -1131,8 +1136,21 @@ export default function AdminDashboardPage() {
             </p>
           </div>
 
-          {/* Top Right: Single Create Post Button */}
-          <div className="shrink-0 flex items-center gap-2">
+          {/* Top Right: Header Actions (Site Settings & Create Post) */}
+          <div className="shrink-0 flex items-center gap-2.5">
+            <Button
+              type="button"
+              onClick={() => setActiveTab("settings")}
+              className={`font-bold text-xs sm:text-sm px-4 py-3 rounded-2xl shadow-md cursor-pointer flex items-center justify-center gap-2 transition-all ${
+                activeTab === "settings"
+                  ? "bg-amber-400 text-slate-950 font-black shadow-amber-400/20"
+                  : "bg-white/10 hover:bg-white/15 text-amber-300 border border-amber-400/30"
+              }`}
+            >
+              <Settings className={`w-4 h-4 ${activeTab === "settings" ? "text-slate-950" : "text-amber-400"}`} />
+              <span>Site Settings</span>
+            </Button>
+
             <Button
               onClick={() => openCreateModal("announcement")}
               className="bg-[#22C55E] hover:bg-[#16A34A] text-slate-950 font-black text-sm px-6 py-3 rounded-2xl shadow-xl cursor-pointer flex items-center justify-center gap-2 hover:scale-105 transition-all"
@@ -1196,64 +1214,81 @@ export default function AdminDashboardPage() {
           </button>
         </div>
 
-        {/* Tab Navigation (Plain labels with live counts & pending donation badge) */}
-        <div className="flex flex-wrap items-center gap-2 border-b border-white/10 pb-4">
-          {[
-            { id: "posts", label: "Posts", count: announcements.length, icon: Megaphone },
-            { id: "events", label: "Events", count: events.length, icon: Calendar },
-            { id: "programs", label: "Programs", count: programs.length, icon: Trees },
-            { id: "resources", label: "Resources", count: resources.length, icon: BookOpen },
-            { id: "gallery", label: "Gallery", count: galleryItems.length, icon: ImageIcon },
-            { id: "volunteers", label: "Volunteers", count: volunteers.length, icon: Users },
-            {
-              id: "donations",
-              label: "Donations",
-              count: donations.length,
-              pendingCount: pendingDonationsCount,
-              icon: Heart
-            },
-            { id: "subscribers", label: "Subscribers", count: subscribers.length, icon: Mail },
-            {
-              id: "messages",
-              label: "Messages",
-              count: messages.length,
-              unreadCount: unreadMessagesCount,
-              icon: MessageSquare
-            },
-            { id: "settings", label: "Site Settings", icon: Settings },
-          ].map((tab) => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => setActiveTab(tab.id as AdminTab)}
-                className={`px-3.5 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 cursor-pointer ${isActive
-                  ? "bg-[#25150B] text-[#e1ffdd] border border-[#8B5A2B] shadow-lg scale-102"
-                  : "bg-white/5 text-slate-300 hover:bg-white/10 border border-white/10 hover:text-white"
-                  }`}
-              >
-                <Icon className={`w-4 h-4 ${isActive ? "text-[#e1ffdd]" : "text-slate-400"}`} />
-                <span>{tab.label}</span>
-                {tab.count !== undefined && (
-                  <span className="text-[11px] opacity-75 font-mono">({tab.count})</span>
-                )}
-                {/* Donations pending badge */}
-                {tab.id === "donations" && tab.pendingCount !== undefined && tab.pendingCount > 0 && (
-                  <span className="px-1.5 py-0.5 rounded-full text-[10px] font-black bg-amber-400 text-slate-950 animate-pulse">
-                    {tab.pendingCount}
-                  </span>
-                )}
-                {/* Unread messages badge */}
-                {tab.id === "messages" && tab.unreadCount !== undefined && tab.unreadCount > 0 && (
-                  <span className="px-1.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-400 text-slate-950">
-                    {tab.unreadCount}
-                  </span>
-                )}
-              </button>
-            );
-          })}
+        {/* Tab Navigation (9 content collection tabs on left, distinct Site Settings on right) */}
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 pb-4">
+          <div className="flex flex-wrap items-center gap-2">
+            {[
+              { id: "posts", label: "Posts", count: announcements.length, icon: Megaphone },
+              { id: "events", label: "Events", count: events.length, icon: Calendar },
+              { id: "programs", label: "Programs", count: programs.length, icon: Trees },
+              { id: "resources", label: "Resources", count: resources.length, icon: BookOpen },
+              { id: "gallery", label: "Gallery", count: galleryItems.length, icon: ImageIcon },
+              { id: "volunteers", label: "Volunteers", count: volunteers.length, icon: Users },
+              {
+                id: "donations",
+                label: "Donations",
+                count: donations.length,
+                pendingCount: pendingDonationsCount,
+                icon: Heart
+              },
+              { id: "subscribers", label: "Subscribers", count: subscribers.length, icon: Mail },
+              {
+                id: "messages",
+                label: "Messages",
+                count: messages.length,
+                unreadCount: unreadMessagesCount,
+                icon: MessageSquare
+              },
+            ].map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setActiveTab(tab.id as AdminTab)}
+                  className={`px-3.5 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 cursor-pointer ${isActive
+                    ? "bg-[#25150B] text-[#e1ffdd] border border-[#8B5A2B] shadow-lg scale-102"
+                    : "bg-white/5 text-slate-300 hover:bg-white/10 border border-white/10 hover:text-white"
+                    }`}
+                >
+                  <Icon className={`w-4 h-4 ${isActive ? "text-[#e1ffdd]" : "text-slate-400"}`} />
+                  <span>{tab.label}</span>
+                  {tab.count !== undefined && (
+                    <span className="text-[11px] opacity-75 font-mono">({tab.count})</span>
+                  )}
+                  {/* Donations pending badge */}
+                  {tab.id === "donations" && tab.pendingCount !== undefined && tab.pendingCount > 0 && (
+                    <span className="px-1.5 py-0.5 rounded-full text-[10px] font-black bg-amber-400 text-slate-950 animate-pulse">
+                      {tab.pendingCount}
+                    </span>
+                  )}
+                  {/* Unread messages badge */}
+                  {tab.id === "messages" && tab.unreadCount !== undefined && tab.unreadCount > 0 && (
+                    <span className="px-1.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-400 text-slate-950">
+                      {tab.unreadCount}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Dedicated, Separated Site Settings Tab Button */}
+          <div className="flex items-center gap-2 pl-2 border-l border-white/15 my-1 ml-auto">
+            <button
+              type="button"
+              onClick={() => setActiveTab("settings")}
+              className={`px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 cursor-pointer ${
+                activeTab === "settings"
+                  ? "bg-amber-400 text-slate-950 font-black shadow-lg scale-102 border border-amber-300"
+                  : "bg-amber-500/10 text-amber-300 hover:bg-amber-500/20 border border-amber-500/30"
+              }`}
+            >
+              <Settings className={`w-4 h-4 ${activeTab === "settings" ? "text-slate-950" : "text-amber-400"}`} />
+              <span>Site Settings</span>
+            </button>
+          </div>
         </div>
 
         {/* ------------------------------------------------------------- */}

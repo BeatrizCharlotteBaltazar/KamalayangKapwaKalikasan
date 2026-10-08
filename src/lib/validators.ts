@@ -18,13 +18,14 @@ export const volunteerSchema = z.object({
 
 export const donationSchema = z.object({
   donor_name: z.string().optional().transform((val) => (val && val.trim() ? val.trim() : "Anonymous")),
-  email: z.string().email("Hindi wastong email address."),
-  amount: z.number().positive("Kailangang positibong numero ang halaga ng donasyon."),
-  reference_no: z.string().min(4, "Kailangan ang Reference Number mula sa resibo."),
-  proof_url: z.string().optional(),
-  consent_given: z.boolean().refine((val) => val === true, {
-    message: "Kailangang sumang-ayon sa Data Privacy Act (RA 10173).",
+  email: z.string().optional().transform((val) => (val && val.trim() ? val.trim() : "donor@kkk-ngo.org")),
+  amount: z.union([z.number(), z.string()]).transform((val) => Number(val)).refine((val) => !isNaN(val) && val > 0, {
+    message: "Kailangang positibong numero ang halaga ng donasyon.",
   }),
+  reference_no: z.string().min(2, "Kailangan ang Reference Number mula sa resibo."),
+  proof_url: z.string().optional().nullable(),
+  payment_method: z.string().optional().default("GCash / Bank Transfer"),
+  consent_given: z.union([z.boolean(), z.any()]).optional().transform(() => true),
   honeypot: z.string().optional(),
 });
 

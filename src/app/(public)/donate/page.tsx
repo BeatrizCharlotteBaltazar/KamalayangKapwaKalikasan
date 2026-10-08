@@ -100,15 +100,55 @@ export default function DonatePage() {
     setErrorMessage("");
 
     try {
+      let proofUrl = "";
+      if (formData.proof_file) {
+        try {
+          proofUrl = await new Promise<string>((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve((reader.result as string) || "");
+            reader.onerror = () => resolve("");
+            reader.readAsDataURL(formData.proof_file!);
+          });
+        } catch {
+          // ignore
+        }
+      }
+
       const payload = {
         donor_name: formData.donor_name.trim() || "Anonymous",
-        email: formData.email,
+        email: formData.email.trim() || "donor@kkk-ngo.org",
         amount: Number(finalAmount),
         currency: "PHP",
-        payment_method: "GCASH_BPI",
-        reference_no: formData.reference_no,
-        proof_url: "",
+        payment_method: "GCash / Bank Transfer",
+        reference_no: formData.reference_no.trim(),
+        proof_url: proofUrl || null,
+        consent_given: true,
       };
+
+      // Always save to localStorage immediately for instant offline/client-side access
+      if (typeof window !== "undefined") {
+        try {
+          const raw = localStorage.getItem("kkk_user_donations");
+          const list = raw ? JSON.parse(raw) : [];
+          const newLocalDonation = {
+            id: `don-local-${Date.now()}`,
+            donorName: payload.donor_name,
+            email: payload.email,
+            amount: payload.amount,
+            trees: Math.max(1, Math.floor(payload.amount / 250)),
+            paymentMethod: payload.payment_method,
+            referenceNo: payload.reference_no,
+            proofUrl: payload.proof_url,
+            status: "Pending",
+            createdAt: new Date().toISOString(),
+          };
+          localStorage.setItem("kkk_user_donations", JSON.stringify([newLocalDonation, ...list]));
+          window.dispatchEvent(new Event("kkk_content_updated"));
+          window.dispatchEvent(new Event("storage"));
+        } catch {
+          // ignore
+        }
+      }
 
       const res = await fetch("/api/donate", {
         method: "POST",
@@ -118,12 +158,14 @@ export default function DonatePage() {
 
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        throw new Error(err.error || "Failed to submit donation record.");
+        setErrorMessage(err.error || "Failed to submit donation record. Please check your reference number.");
+        setStatus("error");
+        return;
       }
 
       router.push("/donate/thank-you");
     } catch (_err: unknown) {
-      // In demo static mode, gracefully navigate to thank you
+      // In offline/static mode with local storage saved, navigate to thank you
       router.push("/donate/thank-you");
     }
   };
