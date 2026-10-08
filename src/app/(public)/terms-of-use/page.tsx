@@ -5,7 +5,7 @@ import { FileCheck, BookOpen, Heart, Shield } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 export const metadata: Metadata = {
-  title: "Terms of Use | Kamalayang Kapwa Kalikasan",
+  title: "Terms of Use",
   description:
     "Official Terms of Use and Code of Conduct for volunteers and visitors of Kamalayang Kapwa Kalikasan.",
 };
@@ -76,7 +76,7 @@ export default function TermsOfUsePage() {
               4. Donations & Transparency
             </h2>
             <p className="text-[#536054]">
-              All donations made via GCash or BPI are voluntary and non-refundable. Funds are dedicated 100% to verified environmental programs, community saplings, and field operations. Official receipts and acknowledgment certificates are issued in accordance with Philippine non-profit guidelines.
+              All donations made via GCash or bank transfer are voluntary and non-refundable. Funds are dedicated to verified environmental programs, community saplings, and field operations. Official acknowledgment records are issued in accordance with Philippine non-profit guidelines.
             </p>
           </section>
 

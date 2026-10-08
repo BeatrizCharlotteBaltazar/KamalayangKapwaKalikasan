@@ -140,7 +140,7 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <strong className="block text-[#19241A] font-bold">Office Operating Hours:</strong>
-                    <span>Monday – Friday: 9:00 AM – 5:00 PM PHT</span>
+                    <span>{siteSettings.office_hours || "Monday - Friday: 8:30 AM - 5:30 PM (PST)"}</span>
                     <span className="block text-[11px] text-slate-400">Weekend Field Operations by appointment</span>
                   </div>
                 </div>

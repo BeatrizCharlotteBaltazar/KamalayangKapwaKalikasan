@@ -1,47 +1,31 @@
 import { Program, Resource, NewsEvent, GalleryItem, Partner, Officer, ImpactStat, SiteSettings } from "@/types";
 
 export const siteSettings: SiteSettings = {
-  gcash_name: "Kamalayang Kapwa Kalikasan Foundation Inc.",
-  gcash_number: "0917-829-KAPWA (0917-829-5279)",
-  gcash_qr_url: "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&w=600&q=80",
-  bank_name: "Bank of the Philippine Islands (BPI)",
-  bank_account_name: "Kamalayang Kapwa Kalikasan Foundation Inc.",
-  bank_account_number: "3891-0428-19",
+  gcash_name: "",
+  gcash_number: "",
+  gcash_qr_url: "",
+  bank_name: "",
+  bank_account_name: "",
+  bank_account_number: "",
   contact_email: "ugnayan@kapwakalikasan.org.ph",
-  contact_phone: "+63 (02) 8920-5381 / +63 917 829 5279",
-  office_address: "HANNAH GRACE BUILDING BLOCK 21 LOT 9 MANGO VILLAGE SALITARAN IV 4114 CITY OF DASMARINAS CAVITE PHILIPPINES",
+  contact_phone: "+63 917 829 5279",
+  office_address: "Hannah Grace Bldg, Block 21 Lot 9, Mango Village, Salitran IV, 4114 City of Dasmariñas, Cavite, Philippines",
   office_hours: "Monday - Friday: 8:30 AM - 5:30 PM (PST)",
   email: "ugnayan@kapwakalikasan.org.ph",
   phone: "+63 917 829 5279",
   address: "Hannah Grace Bldg, Block 21 Lot 9, Mango Village, Salitran IV, 4114 City of Dasmariñas, Cavite, Philippines",
+  dpo_name: "",
+  dpo_email: "",
+  stat_trees_planted: "",
+  stat_volunteers: "",
+  stat_waste_diverted: "",
+  stat_hectares: "",
+  stat_survival_rate: "",
+  stat_gps_tracked: "",
+  stat_donation_percentage: "",
 };
 
-export const impactStats: ImpactStat[] = [
-  {
-    label: "Native Trees Planted",
-    value: "48,500+",
-    description: "Endemic seedlings planted across Sierra Madre & Batangas corridors",
-    iconName: "Trees",
-  },
-  {
-    label: "Active Eco-Volunteers",
-    value: "3,200+",
-    description: "Passionate citizens practicing pakikipagkapwa through climate action",
-    iconName: "Users",
-  },
-  {
-    label: "Plastic Waste Diverted",
-    value: "142 Tons",
-    description: "Recovered through coastal cleanups & barangay zero-waste systems",
-    iconName: "Recycle",
-  },
-  {
-    label: "Community Eco-Hubs",
-    value: "26 Barangays",
-    description: "Self-sustaining urban composting and communal food forests established",
-    iconName: "Sprout",
-  },
-];
+export const impactStats: ImpactStat[] = [];
 
 // Real data is strictly fetched live from Supabase. No demo or mock rows.
 export const programsData: Program[] = [];

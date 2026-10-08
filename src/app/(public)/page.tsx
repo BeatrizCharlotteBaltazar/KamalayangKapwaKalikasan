@@ -10,7 +10,7 @@ import { LatestNews } from "@/components/home/LatestNews";
 import { CTABanner } from "@/components/home/CTABanner";
 
 export const metadata: Metadata = {
-  title: "KAMALAYANG KAPWA KALIKASAN | Bayanihan Para sa Tao at Kalikasan",
+  title: "Bayanihan Para sa Tao at Kalikasan",
   description:
     "Opisyal na website ng Kamalayang Kapwa Kalikasan — isang samahang Pilipino na nagtataguyod ng reforestation sa Sierra Madre, mga rally para sa kalikasan at sangkatauhan, at pamayanang makakalikasan.",
 };

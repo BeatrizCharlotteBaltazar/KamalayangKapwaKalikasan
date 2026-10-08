@@ -13,6 +13,7 @@ import {
   Sparkles 
 } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
+import { resolveAuthorName } from "@/lib/supabase/adminStore";
 import { formatDate } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -39,7 +40,7 @@ async function fetchItem(slug: string) {
       event_date: (ann.published_at || ann.created_at || "").split("T")[0],
       location: "National Headquarters / Sierra Madre",
       cover_image: ann.image_url || "/images/bg2.jpg",
-      organizer: "Kamalayang Kapwa Kalikasan",
+      organizer: resolveAuthorName((ann as any).author),
     };
   }
 
@@ -70,16 +71,16 @@ async function fetchItem(slug: string) {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   try {
     const { slug } = await params;
-    if (!slug) return { title: "Item Not Found | Kamalayang Kapwa Kalikasan" };
+    if (!slug) return { title: "Item Not Found" };
     const item = await fetchItem(slug);
-    if (!item) return { title: "Item Not Found | Kamalayang Kapwa Kalikasan" };
+    if (!item) return { title: "Item Not Found" };
 
     return {
-      title: `${item.title} | Kamalayang Kapwa Kalikasan`,
+      title: item.title,
       description: item.excerpt,
     };
   } catch {
-    return { title: "Item Not Found | Kamalayang Kapwa Kalikasan" };
+    return { title: "Item Not Found" };
   }
 }
 
@@ -147,7 +148,7 @@ export default async function NewsEventDetailPage({ params }: Props) {
           {item.organizer && (
             <p className="text-xs text-slate-300 flex items-center gap-1.5">
               <User className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Inorganisa ng: <strong className="text-white">{item.organizer}</strong></span>
+              <span>Inorganisa / Inilathala ng: <strong className="text-white">{resolveAuthorName(item.organizer)}</strong></span>
             </p>
           )}
 

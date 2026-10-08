@@ -15,7 +15,7 @@ export const volunteerSchema = z.object({
 });
 
 export const donationSchema = z.object({
-  donor_name: z.string().min(1, "Kailangan ang pangalan ng donor."),
+  donor_name: z.string().optional().transform((val) => (val && val.trim() ? val.trim() : "Anonymous")),
   email: z.string().email("Hindi wastong email address."),
   amount: z.number().positive("Kailangang positibong numero ang halaga ng donasyon."),
   reference_no: z.string().min(4, "Kailangan ang Reference Number mula sa resibo."),

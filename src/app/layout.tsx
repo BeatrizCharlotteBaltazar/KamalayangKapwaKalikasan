@@ -42,7 +42,7 @@ const theSeasonsFont = localFont({
 export const metadata: Metadata = {
   title: {
     template: "%s | Kamalayang Kapwa Kalikasan",
-    default: "Kamalayang Kapwa Kalikasan - Bayanihan Para sa Kalikasan",
+    default: "Kamalayang Kapwa Kalikasan",
   },
   description:
     "Isang makakalikasang samahan na nagtataguyod ng pakikipagkapwa para sa pangangalaga ng kalikasan, kagubatan, at komunidad sa Pilipinas.",

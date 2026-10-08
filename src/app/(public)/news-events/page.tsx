@@ -7,9 +7,11 @@ import {
   Calendar, 
   MapPin, 
   ArrowRight, 
-  Flame 
+  Flame,
+  User 
 } from "lucide-react";
 import { fetchPublicNewsEvents } from "@/lib/supabase/publicStore";
+import { resolveAuthorName } from "@/lib/supabase/adminStore";
 import { NewsEvent } from "@/types";
 import { formatDate } from "@/lib/utils";
 
@@ -128,10 +130,15 @@ export default function NewsEventsPage() {
 
                   <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
                     <div>
-                      <div className="flex items-center gap-3 text-xs text-slate-400 mb-2.5">
+                      <div className="flex items-center gap-3 text-xs text-slate-400 mb-2.5 flex-wrap">
                         <span className="flex items-center gap-1 font-semibold text-slate-200">
                           <Calendar className="w-3.5 h-3.5 text-emerald-400" />
                           {formatDate(item.event_date)}
+                        </span>
+                        <span>•</span>
+                        <span className="flex items-center gap-1 text-emerald-300 font-semibold truncate">
+                          <User className="w-3.5 h-3.5 text-emerald-400" />
+                          {resolveAuthorName(item.organizer)}
                         </span>
                         <span>•</span>
                         <span className="flex items-center gap-1 text-slate-300 truncate">

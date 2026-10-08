@@ -25,6 +25,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { supabase } from "@/lib/supabase/client";
+import { resolveAuthorName } from "@/lib/supabase/adminStore";
 
 interface MemberFeedAnnouncement {
   id: string;
@@ -161,8 +162,8 @@ export default function MemberDashboardPage() {
         category: a.category || "General",
         excerpt: a.summary || a.body?.slice(0, 160) || "",
         content: a.body || "",
-        author: "Jennifer Gutierrez Baltazar",
-        authorRole: "Executive Director",
+        author: resolveAuthorName((a as any).author),
+        authorRole: "Official Dispatch",
         authorAvatar: "/images/logo.jpg",
         imageUrl: a.image_url || undefined,
         pinned: false,

@@ -2,7 +2,7 @@ import React from "react";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Admin CMS & Operations Portal | Kamalayang Kapwa Kalikasan",
+  title: "Admin CMS & Operations Portal",
   description: "Executive control panel for managing volunteers, donations, rallies, and content.",
 };
 

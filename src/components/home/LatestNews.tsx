@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Calendar, MapPin, ArrowRight, Flame, Megaphone } from "lucide-react";
+import { Calendar, MapPin, ArrowRight, Flame, Megaphone, User } from "lucide-react";
 import { 
   fetchPublicHomeDispatches, 
   fetchPublicHomeUpcomingRallies, 
@@ -150,6 +150,11 @@ export function LatestNews() {
                         <span className="flex items-center gap-1 text-slate-300 font-semibold">
                           <Calendar className="w-3.5 h-3.5 text-emerald-400" />
                           {formatDate(item.published_at || item.created_at)}
+                        </span>
+                        <span>•</span>
+                        <span className="flex items-center gap-1 text-emerald-300 font-semibold">
+                          <User className="w-3.5 h-3.5 text-emerald-400" />
+                          <span>{item.author || "Kamalayang Kapwa Kalikasan"}</span>
                         </span>
                       </div>
 

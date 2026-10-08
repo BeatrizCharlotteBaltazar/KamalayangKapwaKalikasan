@@ -1,9 +1,13 @@
 "use client";
 
 import React from "react";
-import { Trees, ArrowUpRight, Leaf } from "lucide-react";
+import { Trees, ArrowUpRight } from "lucide-react";
+import { useSiteSettings } from "@/lib/siteSettings";
 
 export function StickyPlantedTrees() {
+  const siteSettings = useSiteSettings();
+  const treesCount = siteSettings.stat_trees_planted?.trim();
+
   const scrollToCalculator = () => {
     if (typeof window !== "undefined") {
       if (window.location.pathname === "/") {
@@ -17,6 +21,14 @@ export function StickyPlantedTrees() {
     }
   };
 
+  if (!treesCount) {
+    return null;
+  }
+
+  const displayText = treesCount.toLowerCase().includes("tree")
+    ? treesCount
+    : `${treesCount} Trees Planted`;
+
   return (
     <aside 
       aria-label="Planted Trees Carbon Offset Tracker"
@@ -26,7 +38,7 @@ export function StickyPlantedTrees() {
         type="button"
         onClick={scrollToCalculator}
         className="group relative flex items-center gap-3 px-4 py-2.5 rounded-full bg-[#1A1008]/92 hover:bg-[#2A190D] border border-[#8B5A2B]/40 hover:border-emerald-500/50 shadow-2xl backdrop-blur-xl transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer text-left"
-        title="14,800+ Native Trees Planted to Lessen Carbon Footprint - Click to Calculate Your Offset"
+        title={`${displayText} - Click to Calculate Your Offset`}
       >
         {/* Pulsing Tree Symbol */}
         <div className="relative flex items-center justify-center w-9 h-9 rounded-full bg-emerald-950/80 border border-emerald-500/40 text-[#22C55E] shrink-0 group-hover:scale-110 transition-transform">
@@ -41,7 +53,7 @@ export function StickyPlantedTrees() {
         <div className="flex flex-col pr-1">
           <div className="flex items-center gap-1.5">
             <span className="font-heading font-black text-xs sm:text-sm text-white tracking-tight">
-              14,800+ Trees Planted
+              {displayText}
             </span>
             <ArrowUpRight className="w-3.5 h-3.5 text-emerald-400 opacity-70 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
           </div>

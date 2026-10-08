@@ -54,46 +54,68 @@ export default function RegisterPage() {
     try {
       // Register in Supabase Auth (default role: member; admins promoted manually in Supabase dashboard)
       const cleanEmail = formData.email.trim().toLowerCase();
+      const fullName = formData.full_name.trim();
+
       const { data, error: signUpError } = await supabase.auth.signUp({
         email: cleanEmail,
         password: formData.password,
         options: {
           data: {
-            full_name: formData.full_name.trim(),
+            full_name: fullName,
             role: "member",
           },
         },
       });
 
       if (signUpError) {
-        setError(signUpError.message);
+        const msgLower = (signUpError.message || "").toLowerCase();
+        if (msgLower.includes("rate limit") || msgLower.includes("rate_limit")) {
+          setError("Email rate limit exceeded. Please wait a few moments before trying again.");
+        } else if (msgLower.includes("already registered") || msgLower.includes("already exists")) {
+          setError("User already registered. Please sign in with your email and password, or reset your password if you forgot it.");
+        } else {
+          setError(signUpError.message);
+        }
         setIsLoading(false);
         return;
       }
 
-      // Store local session info
-      if (typeof window !== "undefined") {
-        const userObj = {
-          id: data.user?.id || `usr-${Date.now()}`,
-          email: cleanEmail,
-          fullName: formData.full_name.trim(),
-          role: "member",
-        };
-        localStorage.setItem("kkk_current_user", JSON.stringify(userObj));
+      // If email confirmation is enabled and user already exists, Supabase returns user with empty identities
+      if (data?.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
+        setError("User already registered. Please sign in with your email and password, or reset your password if you forgot it.");
+        setIsLoading(false);
+        return;
       }
 
-      // Check if session is active immediately or confirmation is pending
-      if (data.session) {
+      // Check if session is active immediately or confirmation email was sent
+      if (data?.session) {
+        if (typeof window !== "undefined") {
+          const userObj = {
+            id: data.user?.id || `usr-${Date.now()}`,
+            email: cleanEmail,
+            fullName,
+            role: "member",
+          };
+          localStorage.setItem("kkk_current_user", JSON.stringify(userObj));
+        }
         router.push("/member/dashboard");
       } else {
+        // Confirmation email was sent by Supabase
         setSuccessMessage(
-          "Account registered successfully! You can now sign in with your credentials. (If you are designated as an administrator, your role will activate once granted in Supabase)."
+          "Check your email to confirm your account. We have sent a confirmation link to your email address. Please click the link in your inbox to verify your account, then sign in."
         );
         setIsLoading(false);
       }
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Failed to create account. Please check your connection and try again.";
-      setError(msg);
+      const rawMsg = err instanceof Error ? err.message : "Failed to create account. Please check your connection and try again.";
+      const msgLower = rawMsg.toLowerCase();
+      if (msgLower.includes("rate limit") || msgLower.includes("rate_limit")) {
+        setError("Email rate limit exceeded. Please wait a few moments before trying again.");
+      } else if (msgLower.includes("already registered") || msgLower.includes("already exists")) {
+        setError("User already registered. Please sign in with your email and password, or reset your password if you forgot it.");
+      } else {
+        setError(rawMsg);
+      }
       setIsLoading(false);
     }
   };

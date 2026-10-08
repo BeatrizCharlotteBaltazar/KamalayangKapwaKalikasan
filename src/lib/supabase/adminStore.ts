@@ -185,6 +185,20 @@ export interface AdminStats {
 }
 
 // ==========================================
+// AUTHOR RESOLUTION HELPER
+// Requirement: Show poster as "Kamalayang Kapwa Kalikasan" (or admin's profiles.full_name).
+// Never show email or hardcoded "Admin". Fallback to org name.
+// ==========================================
+export function resolveAuthorName(name?: string | null): string {
+  if (!name) return "Kamalayang Kapwa Kalikasan";
+  const clean = name.trim();
+  if (!clean || clean.toLowerCase() === "admin" || clean.toLowerCase() === "administrator" || clean.includes("@")) {
+    return "Kamalayang Kapwa Kalikasan";
+  }
+  return clean;
+}
+
+// ==========================================
 // 1. STRICT ADMIN AUTH CHECK (profiles.role ONLY)
 // ==========================================
 export async function verifyAdminClearance(): Promise<{
@@ -228,7 +242,7 @@ export async function verifyAdminClearance(): Promise<{
           ? {
               id: profile.id,
               role: profile.role,
-              fullName: profile.full_name || user.email?.split("@")[0] || "",
+              fullName: resolveAuthorName(profile.full_name),
               email: profile.email || user.email || "",
               avatarUrl: profile.avatar_url || "",
             }
@@ -243,7 +257,7 @@ export async function verifyAdminClearance(): Promise<{
       profile: {
         id: profile.id,
         role: profile.role,
-        fullName: profile.full_name || "Admin",
+        fullName: resolveAuthorName(profile.full_name),
         email: profile.email || user.email || "",
         avatarUrl: profile.avatar_url || "",
       },
@@ -351,8 +365,8 @@ export async function fetchAnnouncements(): Promise<AdminAnnouncement[]> {
         category: (d.category as AdminAnnouncement["category"]) || "General",
         excerpt: d.summary || "",
         content: d.body || "",
-        author: "Jennifer Gutierrez Baltazar",
-        authorRole: "Executive Director",
+        author: resolveAuthorName((d as any).author),
+        authorRole: "Official Dispatch",
         imageUrl: d.image_url || undefined,
         pinned: false,
         isPublished: d.status === "published",
@@ -399,8 +413,8 @@ export async function createAnnouncement(payload: Omit<AdminAnnouncement, "id" |
     category: (data.category as AdminAnnouncement["category"]) || "General",
     excerpt: data.summary || "",
     content: data.body || "",
-    author: "Jennifer Gutierrez Baltazar",
-    authorRole: "Executive Director",
+    author: resolveAuthorName(payload.author),
+    authorRole: payload.authorRole || "Official Dispatch",
     imageUrl: data.image_url || undefined,
     pinned: false,
     isPublished: data.status === "published",

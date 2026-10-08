@@ -10,6 +10,7 @@ import {
   BookOpen,
   Image as ImageIcon,
   Users,
+  User,
   Heart,
   Mail,
   MessageSquare,
@@ -46,6 +47,7 @@ import {
 } from "@/lib/wildlifePhotos";
 import {
   verifyAdminClearance,
+  resolveAuthorName,
   fetchAdminLiveStats,
   fetchAnnouncements,
   createAnnouncement,
@@ -636,8 +638,8 @@ export default function AdminDashboardPage() {
     setIsSavingPost(true);
     setPostModalError(null);
 
-    const currentAuthor = adminProfile?.fullName || "Jennifer Gutierrez Baltazar";
-    const currentRole = adminProfile?.role === "admin" ? "Executive Director" : "Eco-Steward";
+    const currentAuthor = resolveAuthorName(adminProfile?.fullName);
+    const currentRole = "Official Dispatch";
 
     const matchedAnimal = PHILIPPINE_ENDANGERED_ANIMALS.find(
       (a) => a.url === formImageUrl || a.id === selectedAnimal.id
@@ -1304,6 +1306,10 @@ export default function AdminDashboardPage() {
                           )}
                           <span className="text-[10px] text-slate-400">
                             {new Date(ann.createdAt).toLocaleDateString()}
+                          </span>
+                          <span className="text-[10px] text-emerald-300 font-semibold flex items-center gap-1">
+                            <User className="w-3 h-3 text-emerald-400" />
+                            <span>By {resolveAuthorName(ann.author || adminProfile?.fullName)}</span>
                           </span>
                         </div>
 
@@ -2430,16 +2436,137 @@ export default function AdminDashboardPage() {
                   />
                 </div>
 
-                <div className="space-y-1">
-                  <label className="block text-xs font-bold text-slate-300">
-                    Office Hours
-                  </label>
-                  <input
-                    type="text"
-                    value={siteSettingsForm.office_hours}
-                    onChange={(e) => setSiteSettingsForm({ ...siteSettingsForm, office_hours: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-black/60 border border-white/15 text-white text-xs focus:outline-none focus:ring-2 focus:ring-emerald-400"
-                  />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="block text-xs font-bold text-slate-300">
+                      Office Hours
+                    </label>
+                    <input
+                      type="text"
+                      value={siteSettingsForm.office_hours || ""}
+                      onChange={(e) => setSiteSettingsForm({ ...siteSettingsForm, office_hours: e.target.value })}
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-black/60 border border-white/15 text-white text-xs focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="block text-xs font-bold text-slate-300">
+                      Data Protection Officer (DPO Name)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Atty. Maria Santos or Designated DPO"
+                      value={siteSettingsForm.dpo_name || ""}
+                      onChange={(e) => setSiteSettingsForm({ ...siteSettingsForm, dpo_name: e.target.value })}
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-black/60 border border-white/15 text-white text-xs focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Impact Statistics & Public Claims Section */}
+              <div className="p-6 rounded-3xl bg-[#0A1B11]/85 border border-emerald-500/25 shadow-xl space-y-4">
+                <div className="flex items-center gap-2 border-b border-white/10 pb-3">
+                  <div className="w-8 h-8 rounded-lg bg-emerald-950/80 text-emerald-400 flex items-center justify-center font-bold text-sm">
+                    <Trees className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="font-heading font-bold text-sm text-white">Impact Statistics &amp; Public Claims</h3>
+                    <p className="text-[11px] text-slate-400">Controls top sticky counter and Impact cards. Leave empty to hide corresponding blocks.</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="space-y-1">
+                    <label className="block text-xs font-bold text-slate-300">
+                      Trees Planted (Sticky banner &amp; Impact)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. 14,800+ (Leave blank to hide)"
+                      value={siteSettingsForm.stat_trees_planted || ""}
+                      onChange={(e) => setSiteSettingsForm({ ...siteSettingsForm, stat_trees_planted: e.target.value })}
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-black/60 border border-white/15 text-white text-xs focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="block text-xs font-bold text-slate-300">
+                      Tree Survival Rate
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. 85% (Leave blank to hide)"
+                      value={siteSettingsForm.stat_survival_rate || ""}
+                      onChange={(e) => setSiteSettingsForm({ ...siteSettingsForm, stat_survival_rate: e.target.value })}
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-black/60 border border-white/15 text-white text-xs focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="block text-xs font-bold text-slate-300">
+                      Active Volunteers
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. 3,200+ (Leave blank to hide)"
+                      value={siteSettingsForm.stat_volunteers || ""}
+                      onChange={(e) => setSiteSettingsForm({ ...siteSettingsForm, stat_volunteers: e.target.value })}
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-black/60 border border-white/15 text-white text-xs focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="block text-xs font-bold text-slate-300">
+                      Coastal Waste Diverted
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. 18.4 Tons (Leave blank to hide)"
+                      value={siteSettingsForm.stat_waste_diverted || ""}
+                      onChange={(e) => setSiteSettingsForm({ ...siteSettingsForm, stat_waste_diverted: e.target.value })}
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-black/60 border border-white/15 text-white text-xs focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="block text-xs font-bold text-slate-300">
+                      Protected Land Area
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. 1,200+ Ha (Leave blank to hide)"
+                      value={siteSettingsForm.stat_hectares || ""}
+                      onChange={(e) => setSiteSettingsForm({ ...siteSettingsForm, stat_hectares: e.target.value })}
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-black/60 border border-white/15 text-white text-xs focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="block text-xs font-bold text-slate-300">
+                      GPS-Tracked Verification Claim
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. GPS-tracked (Leave blank to omit)"
+                      value={siteSettingsForm.stat_gps_tracked || ""}
+                      onChange={(e) => setSiteSettingsForm({ ...siteSettingsForm, stat_gps_tracked: e.target.value })}
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-black/60 border border-white/15 text-white text-xs focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                    />
+                  </div>
+
+                  <div className="space-y-1 sm:col-span-2 lg:col-span-3">
+                    <label className="block text-xs font-bold text-slate-300">
+                      Donation Funding Claim Percentage
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. 100% (Leave blank to omit exact percentage)"
+                      value={siteSettingsForm.stat_donation_percentage || ""}
+                      onChange={(e) => setSiteSettingsForm({ ...siteSettingsForm, stat_donation_percentage: e.target.value })}
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-black/60 border border-white/15 text-white text-xs focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -2753,6 +2880,16 @@ export default function AdminDashboardPage() {
 
             {/* Post Details Form */}
             <form onSubmit={handleSavePost} className="space-y-4">
+              {postModalType === "announcement" && (
+                <div className="p-3 rounded-xl bg-black/40 border border-emerald-500/25 flex items-center justify-between text-xs">
+                  <span className="text-slate-300">Poster / Author:</span>
+                  <span className="font-bold text-emerald-300 flex items-center gap-1.5">
+                    <User className="w-3.5 h-3.5 text-emerald-400" />
+                    {resolveAuthorName(adminProfile?.fullName)}
+                  </span>
+                </div>
+              )}
+
               {/* Title */}
               <div className="space-y-1.5">
                 <label className="block text-xs font-bold text-slate-300 uppercase tracking-wide">

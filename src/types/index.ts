@@ -125,4 +125,13 @@ export interface SiteSettings {
   email?: string;
   phone?: string;
   address?: string;
+  dpo_name?: string;
+  dpo_email?: string;
+  stat_trees_planted?: string;
+  stat_volunteers?: string;
+  stat_waste_diverted?: string;
+  stat_hectares?: string;
+  stat_survival_rate?: string;
+  stat_gps_tracked?: string;
+  stat_donation_percentage?: string;
 }

@@ -91,183 +91,207 @@ export function CarbonCalculator() {
           </p>
         </div>
 
-        {/* Interactive Layout: Sliders & Settings on Left, Live Output on Right */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {/* Interactive Layout: Equal-height CSS Grid with items-stretch */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
           
-          {/* LEFT: Controls (7 cols) */}
-          <div className="lg:col-span-7 bg-[#0A1B11]/85 backdrop-blur-xl rounded-3xl p-6 sm:p-8 border border-emerald-500/20 shadow-2xl space-y-6">
+          {/* LEFT CARD: Inputs & Controls (7 cols on desktop, full width on mobile) */}
+          <div className="lg:col-span-7 flex flex-col justify-between bg-[#0A1B11]/90 backdrop-blur-xl rounded-3xl p-6 sm:p-8 border border-emerald-500/25 shadow-2xl space-y-6 h-full">
             
-            {/* 1. Monthly Electricity */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-xs sm:text-sm font-bold">
-                <span className="flex items-center gap-2 text-white">
-                  <Zap className="w-4 h-4 text-[#F59E0B]" />
-                  <span>Monthly Electric Bill (Meralco / Coop)</span>
-                </span>
-                <span className="text-[#F59E0B] font-extrabold text-base">
-                  ₱{electricBill.toLocaleString()}
-                </span>
+            {/* Aligned Card Header */}
+            <div className="flex items-center justify-between pb-4 border-b border-white/10">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+                  <Calculator className="w-4 h-4" />
+                </div>
+                <h3 className="font-heading font-extrabold text-lg sm:text-xl text-white">
+                  Lifestyle &amp; Consumption Inputs
+                </h3>
               </div>
-              
-              <input
-                type="range"
-                min="500"
-                max="15000"
-                step="250"
-                value={electricBill}
-                onChange={(e) => setElectricBill(Number(e.target.value))}
-                className="w-full accent-[#F59E0B] cursor-pointer"
-              />
-              <div className="flex justify-between text-[11px] text-slate-400">
-                <span>₱500/mo (Basic)</span>
-                <span>Est. {Math.round(monthlyKwh)} kWh/month</span>
-                <span>₱15,000/mo (Aircon)</span>
-              </div>
+              <span className="text-[11px] font-bold text-[#D4C3A3] uppercase tracking-wider bg-black/40 px-3 py-1 rounded-full border border-white/10">
+                PH Baseline
+              </span>
             </div>
 
-            {/* 2. Daily Commute Mode & Distance */}
-            <div className="space-y-3 pt-2 border-t border-white/10">
-              <div className="flex items-center justify-between text-xs sm:text-sm font-bold">
-                <span className="flex items-center gap-2 text-white">
-                  <Car className="w-4 h-4 text-[#2563EB]" />
-                  <span>Primary Daily Commute</span>
-                </span>
-                <span className="text-[#2563EB] font-extrabold text-sm capitalize">
-                  {commuteMode === "jeepney" && "Jeepney / Bus"}
-                  {commuteMode === "motorcycle" && "Motorcycle"}
-                  {commuteMode === "car" && "Gasoline Car"}
-                  {commuteMode === "train" && "LRT / MRT / PNR"}
-                  {commuteMode === "walk" && "Bike / Walk"}
-                </span>
-              </div>
-
-              {/* Mode Selector Buttons */}
-              <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
-                {[
-                  { id: "jeepney", label: "Jeep / Bus" },
-                  { id: "motorcycle", label: "Motorcycle" },
-                  { id: "car", label: "Private Car" },
-                  { id: "train", label: "LRT / MRT" },
-                  { id: "walk", label: "Bike / Walk" },
-                ].map((mode) => (
-                  <button
-                    key={mode.id}
-                    type="button"
-                    onClick={() => setCommuteMode(mode.id as "jeepney" | "motorcycle" | "car" | "train" | "walk")}
-                    className={`py-2 px-1.5 rounded-xl text-xs font-bold transition-all text-center cursor-pointer ${
-                      commuteMode === mode.id
-                        ? "bg-[#2563EB] text-white shadow-md scale-102"
-                        : "bg-white/5 text-slate-300 hover:bg-white/10 border border-white/10"
-                    }`}
-                  >
-                    {mode.label}
-                  </button>
-                ))}
-              </div>
-
-              {/* Distance Slider */}
-              <div className="pt-2">
-                <div className="flex justify-between text-xs text-slate-300 mb-1">
-                  <span>Daily round-trip travel:</span>
-                  <strong className="text-white font-bold">{commuteDistance} km / day</strong>
+            <div className="space-y-6 flex-1">
+              {/* 1. Monthly Electricity */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-xs sm:text-sm font-bold">
+                  <span className="flex items-center gap-2 text-white">
+                    <Zap className="w-4 h-4 text-[#F59E0B]" />
+                    <span>Monthly Electric Bill (Meralco / Coop)</span>
+                  </span>
+                  <span className="text-[#F59E0B] font-extrabold text-base">
+                    ₱{electricBill.toLocaleString()}
+                  </span>
                 </div>
+                
+                <input
+                  type="range"
+                  min="500"
+                  max="15000"
+                  step="250"
+                  value={electricBill}
+                  onChange={(e) => setElectricBill(Number(e.target.value))}
+                  className="w-full accent-[#F59E0B] cursor-pointer"
+                />
+                <div className="flex justify-between text-[11px] text-slate-400">
+                  <span>₱500/mo (Basic)</span>
+                  <span>Est. {Math.round(monthlyKwh)} kWh/month</span>
+                  <span>₱15,000/mo (Aircon)</span>
+                </div>
+              </div>
+
+              {/* 2. Daily Commute Mode & Distance */}
+              <div className="space-y-3 pt-3 border-t border-white/10">
+                <div className="flex items-center justify-between text-xs sm:text-sm font-bold">
+                  <span className="flex items-center gap-2 text-white">
+                    <Car className="w-4 h-4 text-[#2563EB]" />
+                    <span>Primary Daily Commute</span>
+                  </span>
+                  <span className="text-[#2563EB] font-extrabold text-sm capitalize">
+                    {commuteMode === "jeepney" && "Jeepney / Bus"}
+                    {commuteMode === "motorcycle" && "Motorcycle"}
+                    {commuteMode === "car" && "Gasoline Car"}
+                    {commuteMode === "train" && "LRT / MRT / PNR"}
+                    {commuteMode === "walk" && "Bike / Walk"}
+                  </span>
+                </div>
+
+                {/* Mode Selector Buttons */}
+                <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+                  {[
+                    { id: "jeepney", label: "Jeep / Bus" },
+                    { id: "motorcycle", label: "Motorcycle" },
+                    { id: "car", label: "Private Car" },
+                    { id: "train", label: "LRT / MRT" },
+                    { id: "walk", label: "Bike / Walk" },
+                  ].map((mode) => (
+                    <button
+                      key={mode.id}
+                      type="button"
+                      onClick={() => setCommuteMode(mode.id as "jeepney" | "motorcycle" | "car" | "train" | "walk")}
+                      className={`py-2 px-1.5 rounded-xl text-xs font-bold transition-all text-center cursor-pointer ${
+                        commuteMode === mode.id
+                          ? "bg-[#2563EB] text-white shadow-md scale-102"
+                          : "bg-white/5 text-slate-300 hover:bg-white/10 border border-white/10"
+                      }`}
+                    >
+                      {mode.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Distance Slider */}
+                <div className="pt-2">
+                  <div className="flex justify-between text-xs text-slate-300 mb-1">
+                    <span>Daily round-trip travel:</span>
+                    <strong className="text-white font-bold">{commuteDistance} km / day</strong>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="80"
+                    step="5"
+                    value={commuteDistance}
+                    onChange={(e) => setCommuteDistance(Number(e.target.value))}
+                    className="w-full accent-[#2563EB] cursor-pointer"
+                  />
+                </div>
+              </div>
+
+              {/* 3. Domestic Flights */}
+              <div className="space-y-2 pt-3 border-t border-white/10">
+                <div className="flex items-center justify-between text-xs sm:text-sm font-bold">
+                  <span className="flex items-center gap-2 text-white">
+                    <Plane className="w-4 h-4 text-[#DC2626]" />
+                    <span>Domestic Flights (PH Roundtrips / Year)</span>
+                  </span>
+                  <span className="text-[#DC2626] font-extrabold text-base">
+                    {domesticFlights} flights
+                  </span>
+                </div>
+
                 <input
                   type="range"
                   min="0"
-                  max="80"
-                  step="5"
-                  value={commuteDistance}
-                  onChange={(e) => setCommuteDistance(Number(e.target.value))}
-                  className="w-full accent-[#2563EB] cursor-pointer"
+                  max="12"
+                  step="1"
+                  value={domesticFlights}
+                  onChange={(e) => setDomesticFlights(Number(e.target.value))}
+                  className="w-full accent-[#DC2626] cursor-pointer"
                 />
-              </div>
-            </div>
-
-            {/* 3. Domestic Flights */}
-            <div className="space-y-2 pt-2 border-t border-white/10">
-              <div className="flex items-center justify-between text-xs sm:text-sm font-bold">
-                <span className="flex items-center gap-2 text-white">
-                  <Plane className="w-4 h-4 text-[#DC2626]" />
-                  <span>Domestic Flights (PH Roundtrips / Year)</span>
-                </span>
-                <span className="text-[#DC2626] font-extrabold text-base">
-                  {domesticFlights} flights
-                </span>
+                <div className="flex justify-between text-[11px] text-slate-400">
+                  <span>0 (Stay local)</span>
+                  <span>Manila - Cebu / Davao / Palawan</span>
+                  <span>12+ (Frequent flyer)</span>
+                </div>
               </div>
 
-              <input
-                type="range"
-                min="0"
-                max="12"
-                step="1"
-                value={domesticFlights}
-                onChange={(e) => setDomesticFlights(Number(e.target.value))}
-                className="w-full accent-[#DC2626] cursor-pointer"
-              />
-              <div className="flex justify-between text-[11px] text-slate-400">
-                <span>0 (Stay local)</span>
-                <span>Manila - Cebu / Davao / Palawan</span>
-                <span>12+ (Frequent flyer)</span>
-              </div>
-            </div>
+              {/* 4. Diet Profile */}
+              <div className="space-y-2 pt-3 border-t border-white/10">
+                <div className="flex items-center justify-between text-xs sm:text-sm font-bold">
+                  <span className="flex items-center gap-2 text-white">
+                    <Utensils className="w-4 h-4 text-[#22C55E]" />
+                    <span>Diet &amp; Consumption Style</span>
+                  </span>
+                </div>
 
-            {/* 4. Diet Profile */}
-            <div className="space-y-2 pt-2 border-t border-white/10">
-              <div className="flex items-center justify-between text-xs sm:text-sm font-bold">
-                <span className="flex items-center gap-2 text-white">
-                  <Utensils className="w-4 h-4 text-[#22C55E]" />
-                  <span>Diet & Consumption Style</span>
-                </span>
-              </div>
-
-              <div className="grid grid-cols-3 gap-2">
-                {[
-                  { id: "meat", label: "Meat-Heavy", desc: "Pork / Beef daily" },
-                  { id: "balanced", label: "Balanced", desc: "Fish, chicken, gulay" },
-                  { id: "plant", label: "Plant-Rich", desc: "Vegetarian / vegan" },
-                ].map((diet) => (
-                  <button
-                    key={diet.id}
-                    type="button"
-                    onClick={() => setDietType(diet.id as "meat" | "balanced" | "plant")}
-                    className={`py-2 px-2 rounded-xl text-left transition-all cursor-pointer ${
-                      dietType === diet.id
-                        ? "bg-[#22C55E] text-slate-950 font-black shadow-md scale-102"
-                        : "bg-white/5 text-slate-300 hover:bg-white/10 border border-white/10"
-                    }`}
-                  >
-                    <span className="block text-xs font-bold leading-tight">{diet.label}</span>
-                    <span className="block text-[10px] opacity-80 mt-0.5 leading-tight">{diet.desc}</span>
-                  </button>
-                ))}
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { id: "meat", label: "Meat-Heavy", desc: "Pork / Beef daily" },
+                    { id: "balanced", label: "Balanced", desc: "Fish, chicken, gulay" },
+                    { id: "plant", label: "Plant-Rich", desc: "Vegetarian / vegan" },
+                  ].map((diet) => (
+                    <button
+                      key={diet.id}
+                      type="button"
+                      onClick={() => setDietType(diet.id as "meat" | "balanced" | "plant")}
+                      className={`py-2 px-2 rounded-xl text-left transition-all cursor-pointer ${
+                        dietType === diet.id
+                          ? "bg-[#22C55E] text-slate-950 font-black shadow-md scale-102"
+                          : "bg-white/5 text-slate-300 hover:bg-white/10 border border-white/10"
+                      }`}
+                    >
+                      <span className="block text-xs font-bold leading-tight">{diet.label}</span>
+                      <span className="block text-[10px] opacity-80 mt-0.5 leading-tight">{diet.desc}</span>
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
 
           </div>
 
-          {/* RIGHT: Live Results & Native Tree Offset Action (5 cols) */}
-          <div className="lg:col-span-5 bg-gradient-to-b from-[#0E2919] to-[#07170E] rounded-3xl p-6 sm:p-8 border-2 border-emerald-500/30 shadow-2xl space-y-6 text-white">
+          {/* RIGHT CARD: Live Results & Offset (5 cols on desktop, full width on mobile, matching height) */}
+          <div className="lg:col-span-5 flex flex-col justify-between bg-gradient-to-b from-[#0E2919] via-[#0A1D13] to-[#140C06] rounded-3xl p-6 sm:p-8 border border-emerald-500/30 shadow-2xl space-y-6 h-full text-white">
             
-            <div>
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="text-xs font-bold uppercase tracking-widest text-[#F59E0B]">
-                  Your Estimated Annual Footprint
-                </span>
-                <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${footprintTier.color}`}>
-                  {footprintTier.label}
-                </span>
+            {/* Aligned Card Header */}
+            <div className="flex items-center justify-between pb-4 border-b border-white/10">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+                  <Leaf className="w-4 h-4 text-[#22C55E]" />
+                </div>
+                <h3 className="font-heading font-extrabold text-lg sm:text-xl text-white">
+                  Annual Carbon Output
+                </h3>
               </div>
-              
-              <div className="mt-2 flex items-baseline gap-2">
-                <span className="text-5xl sm:text-6xl font-black text-white tracking-tight">
-                  {totalCo2}
-                </span>
-                <span className="text-sm sm:text-base font-bold text-slate-300">
-                  Metric Tons CO2e / year
-                </span>
-              </div>
+              <span className={`px-3 py-1 rounded-full text-[11px] font-bold border ${footprintTier.color}`}>
+                {footprintTier.label}
+              </span>
+            </div>
 
-              <p className="text-xs text-slate-400 mt-1">
+            {/* Center the main number */}
+            <div className="flex flex-col items-center justify-center text-center my-auto py-4">
+              <span className="text-xs font-bold uppercase tracking-widest text-[#F59E0B] mb-1">
+                Your Estimated Footprint
+              </span>
+              <div className="text-6xl sm:text-7xl font-black text-white tracking-tight leading-none font-heading">
+                {totalCo2}
+              </div>
+              <span className="text-xs sm:text-sm font-bold text-emerald-300 uppercase tracking-widest mt-2">
+                Metric Tons CO₂e / Year
+              </span>
+              <p className="text-xs text-slate-300 mt-2 max-w-xs leading-relaxed">
                 Philippine national average: <strong className="text-white">{phAverage} tons</strong>. You are{" "}
                 <span className={totalCo2 > phAverage ? "text-amber-400 font-bold" : "text-emerald-400 font-bold"}>
                   {totalCo2 > phAverage ? `${Math.round(((totalCo2 - phAverage) / phAverage) * 100)}% above` : "below"} national avg.
@@ -276,7 +300,7 @@ export function CarbonCalculator() {
             </div>
 
             {/* Tree Offset Box */}
-            <div className="p-5 rounded-2xl bg-black/40 border border-emerald-500/30 space-y-3">
+            <div className="p-5 rounded-2xl bg-[#061109]/90 border border-emerald-500/30 space-y-2.5">
               <div className="flex items-center gap-3">
                 <div className="p-2.5 rounded-xl bg-emerald-500/20 text-emerald-400 shrink-0">
                   <Trees className="w-6 h-6" />
@@ -297,74 +321,81 @@ export function CarbonCalculator() {
             {/* Direct Action Pledge Buttons */}
             <div className="space-y-3 pt-2">
               <Link href="/donate" className="block">
-                <Button className="w-full bg-[#DC2626] hover:bg-[#B91C1C] text-white font-extrabold text-sm py-6 rounded-2xl shadow-xl flex items-center justify-center gap-2">
+                <Button className="w-full bg-[#DC2626] hover:bg-[#B91C1C] text-white font-extrabold text-sm py-5 rounded-xl shadow-xl flex items-center justify-center gap-2">
                   <Leaf className="w-4 h-4" />
                   <span>Sponsor Your {treesNeeded} Trees (₱250 each)</span>
                 </Button>
               </Link>
 
               <Link href="/get-involved" className="block">
-                <Button variant="outline" className="w-full border-emerald-500/40 bg-white/5 hover:bg-white/10 text-emerald-300 hover:text-white font-bold text-xs py-5 rounded-2xl flex items-center justify-center gap-2">
+                <Button variant="outline" className="w-full border-emerald-500/40 bg-white/5 hover:bg-white/10 text-emerald-300 hover:text-white font-bold text-xs py-4 rounded-xl flex items-center justify-center gap-2">
                   <Sparkles className="w-4 h-4 text-[#F59E0B]" />
-                  <span>Join Hands-On Tree Planting & Rallies</span>
+                  <span>Join Hands-On Tree Planting &amp; Rallies</span>
                   <ArrowRight className="w-4 h-4" />
                 </Button>
               </Link>
             </div>
 
-            {/* Scientific Calculation Basis Card Footnote */}
-            <div className="pt-4 border-t border-emerald-500/25 space-y-3">
-              <div className="flex items-center gap-2 text-xs font-bold text-[#F59E0B] uppercase tracking-wide">
-                <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span>Basis of the Calculator: Based on</span>
-              </div>
+          </div>
 
-              <div className="p-4 rounded-2xl bg-black/50 border border-emerald-500/20 text-[11px] text-slate-300 space-y-2.5 leading-relaxed">
-                <p className="text-slate-200 font-semibold border-b border-white/10 pb-1.5">
-                  This carbon footprint estimation and tree offset requirement is calculated based on established Philippine national conversion standards and IPCC methodologies:
-                </p>
-
-                <ul className="space-y-2 text-slate-300">
-                  <li className="flex items-start gap-2">
-                    <span className="text-emerald-400 font-bold shrink-0">&bull;</span>
-                    <div>
-                      <strong className="text-white">Household Electricity:</strong> Based on the Philippine Department of Energy (DOE) Luzon-Visayas Grid Emission Factor (~0.712 kg CO₂e / kWh) with an assumed residential electricity rate of ₱12.00/kWh.
-                    </div>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-emerald-400 font-bold shrink-0">&bull;</span>
-                    <div>
-                      <strong className="text-white">Daily Commuting:</strong> Based on Department of Transportation (DOTr) and IPCC transport emission factors (Jeepney/Bus: 0.05 kg CO₂e/km, Motorcycle: 0.09 kg CO₂e/km, Private Car: 0.19 kg CO₂e/km, Train: 0.03 kg CO₂e/km, calculated across 260 work days/year).
-                    </div>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-emerald-400 font-bold shrink-0">&bull;</span>
-                    <div>
-                      <strong className="text-white">Domestic Air Travel:</strong> Based on Civil Aviation Authority of the Philippines (CAAP) & ICAO per-passenger roundtrip index (~240 kg CO₂e per domestic roundtrip flight).
-                    </div>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-emerald-400 font-bold shrink-0">&bull;</span>
-                    <div>
-                      <strong className="text-white">Diet & Consumption Profile:</strong> Based on UN Food and Agriculture Organization (FAO) Southeast Asia food systems benchmark (Meat-heavy: 1.8 t CO₂e/yr, Balanced: 1.2 t CO₂e/yr, Plant-rich: 0.6 t CO₂e/yr).
-                    </div>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-emerald-400 font-bold shrink-0">&bull;</span>
-                    <div>
-                      <strong className="text-white">Tree Carbon Absorption:</strong> Based on DENR Forest Management Bureau (FMB) & UPLB College of Forestry empirical research (1 mature native Philippine dipterocarp or hardwood such as Narra/Dao absorbs approximately 22 kg CO₂e per year).
-                    </div>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-emerald-400 font-bold shrink-0">&bull;</span>
-                    <div>
-                      <strong className="text-white">National Benchmark:</strong> Compared against the Climate Change Commission (CCC) Philippines national average benchmark of 1.40 metric tons CO₂e per person annually.
-                    </div>
-                  </li>
-                </ul>
+          {/* FULL-WIDTH CARD: Scientific Calculation Basis & Standards (matching padding and border radius) */}
+          <div className="col-span-1 lg:col-span-12 w-full rounded-3xl p-6 sm:p-8 bg-[#08150D]/90 backdrop-blur-md border border-emerald-500/25 shadow-xl space-y-4">
+            <div className="flex items-center gap-2.5 pb-3 border-b border-white/10">
+              <div className="w-7 h-7 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+                <CheckCircle className="w-4 h-4" />
               </div>
+              <h4 className="font-heading font-extrabold text-sm sm:text-base text-[#F59E0B] uppercase tracking-wide">
+                Estimation Basis &amp; Emission Factors
+              </h4>
             </div>
 
+            <p className="text-xs text-slate-300 leading-relaxed">
+              These calculations are estimates based on commonly used emission factors and general environmental research models:
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-1">
+              <div className="p-3.5 rounded-2xl bg-black/40 border border-white/10 text-[11px] text-slate-300 space-y-1">
+                <span className="font-bold text-white block text-xs">1. Household Electricity</span>
+                <p className="leading-relaxed">
+                  General regional grid emission factor estimates (~0.7 kg CO₂e / kWh) calculated against standard residential electric consumption.
+                </p>
+              </div>
+
+              <div className="p-3.5 rounded-2xl bg-black/40 border border-white/10 text-[11px] text-slate-300 space-y-1">
+                <span className="font-bold text-white block text-xs">2. Daily Commuting</span>
+                <p className="leading-relaxed">
+                  Estimates derived from typical public and private transport emission factors (Jeep/Bus, motorcycle, car, train) across standard commute routines.
+                </p>
+              </div>
+
+              <div className="p-3.5 rounded-2xl bg-black/40 border border-white/10 text-[11px] text-slate-300 space-y-1">
+                <span className="font-bold text-white block text-xs">3. Domestic Air Travel</span>
+                <p className="leading-relaxed">
+                  Estimates based on passenger flight distance averages (~240 kg CO₂e per typical short-haul domestic roundtrip).
+                </p>
+              </div>
+
+              <div className="p-3.5 rounded-2xl bg-black/40 border border-white/10 text-[11px] text-slate-300 space-y-1">
+                <span className="font-bold text-white block text-xs">4. Diet &amp; Consumption</span>
+                <p className="leading-relaxed">
+                  General lifestyle consumption factors representing typical dietary profiles (plant-rich, balanced, or meat-heavy daily meals).
+                </p>
+              </div>
+
+              <div className="p-3.5 rounded-2xl bg-black/40 border border-white/10 text-[11px] text-slate-300 space-y-1">
+                <span className="font-bold text-white block text-xs">5. Native Tree Absorption</span>
+                <p className="leading-relaxed">
+                  General forestry estimates indicating that a healthy mature native tree absorbs approximately 20–22 kg CO₂e per year over its growth cycle.
+                </p>
+              </div>
+
+              <div className="p-3.5 rounded-2xl bg-black/40 border border-white/10 text-[11px] text-slate-300 space-y-1">
+                <span className="font-bold text-white block text-xs">6. Reference Benchmark</span>
+                <p className="leading-relaxed">
+                  General per-capita emissions benchmark of approximately 1.4 metric tons CO₂e annually for standard comparative awareness.
+                </p>
+              </div>
+            </div>
           </div>
 
         </div>

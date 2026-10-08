@@ -26,6 +26,8 @@ const navItems = [
   { href: "/programs", label: "PROGRAMS" },
   { href: "/resources", label: "RESOURCES" },
   { href: "/news-events", label: "EVENTS" },
+  { href: "/gallery", label: "GALLERY" },
+  { href: "/partners", label: "PARTNERS" },
   { href: "/contact", label: "CONTACT US" },
 ];
 
@@ -87,8 +89,8 @@ export function Navbar() {
     <>
       <header
         className={`sticky top-0 z-40 transition-all duration-300 ${isScrolled
-            ? "bg-[#180E07]/85 backdrop-blur-lg border-b border-[#4A2814]/50 py-3 shadow-2xl"
-            : "bg-[#1F1209]/70 backdrop-blur-md border-b border-[#4A2814]/30 py-3.5"
+          ? "bg-[#180E07]/85 backdrop-blur-lg border-b border-[#4A2814]/50 py-3 shadow-2xl"
+          : "bg-[#1F1209]/70 backdrop-blur-md border-b border-[#4A2814]/30 py-3.5"
           }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -113,7 +115,7 @@ export function Navbar() {
 
             {/* Center: The Seasons Font Nav Links (Dark Brown Navbar theme) */}
             <nav
-              className="hidden md:flex items-center justify-center gap-7 lg:gap-11 font-the-seasons tracking-widest text-sm lg:text-base text-[#F0E6D2]"
+              className="hidden lg:flex items-center justify-center gap-4 xl:gap-6 font-the-seasons tracking-wider text-xs xl:text-sm text-[#F0E6D2]"
               style={{ fontFamily: 'var(--font-the-seasons), "The Seasons", Georgia, serif' }}
             >
               {navItems.map((item) => {
@@ -123,8 +125,8 @@ export function Navbar() {
                     key={item.href}
                     href={item.href}
                     className={`transition-all duration-200 uppercase hover:text-[#e1ffdd] ${isActive
-                        ? "text-[#e1ffdd] font-bold border-b border-[#e1ffdd] pb-0.5"
-                        : "text-[#F0E6D2]/90 hover:opacity-100"
+                      ? "text-[#e1ffdd] font-bold border-b border-[#e1ffdd] pb-0.5"
+                      : "text-[#F0E6D2]/90 hover:opacity-100"
                       }`}
                   >
                     {item.label}
@@ -133,7 +135,7 @@ export function Navbar() {
               })}
 
               {/* HELP Dropdown in Navbar */}
-              <div 
+              <div
                 className="relative"
                 onMouseEnter={() => setIsHelpOpen(true)}
                 onMouseLeave={() => setIsHelpOpen(false)}
@@ -142,8 +144,8 @@ export function Navbar() {
                   type="button"
                   onClick={() => setIsHelpOpen(!isHelpOpen)}
                   className={`flex items-center gap-1 uppercase transition-all duration-200 hover:text-[#e1ffdd] cursor-pointer ${pathname === "/get-involved" || pathname === "/donate"
-                      ? "text-[#e1ffdd] font-bold border-b border-[#e1ffdd] pb-0.5"
-                      : "text-[#F0E6D2]/90"
+                    ? "text-[#e1ffdd] font-bold border-b border-[#e1ffdd] pb-0.5"
+                    : "text-[#F0E6D2]/90"
                     }`}
                 >
                   <span>HELP</span>
@@ -176,8 +178,9 @@ export function Navbar() {
               </div>
             </nav>
 
-            {/* Right: User Avatar Picture with Persistent Session */}
+            {/* Right: Highlighted Donate Button + User Avatar / Sign In */}
             <div className="hidden sm:flex items-center gap-3 shrink-0" ref={userMenuRef}>
+
               {isAuthenticated && user ? (
                 <div className="relative">
                   <button
@@ -241,8 +244,8 @@ export function Navbar() {
                             {user.email}
                           </p>
                           <span className={`inline-block mt-1 text-[9px] font-bold px-2 py-0.5 rounded-full ${user.role === "admin"
-                              ? "bg-amber-950 text-amber-300 border border-amber-500/40"
-                              : "bg-emerald-950 text-emerald-300 border border-emerald-500/40"
+                            ? "bg-amber-950 text-amber-300 border border-amber-500/40"
+                            : "bg-emerald-950 text-emerald-300 border border-emerald-500/40"
                             }`}>
                             {user.role === "admin" ? "Admin Clearance" : "Eco-Steward Member"}
                           </span>
@@ -314,8 +317,17 @@ export function Navbar() {
               )}
             </div>
 
-            {/* Mobile Menu Button & Avatar */}
-            <div className="flex items-center gap-2 md:hidden">
+            {/* Mobile Menu Button, Highlighted Donate Button & Avatar */}
+            <div className="flex items-center gap-2 lg:hidden">
+              <Link
+                href="/donate"
+                className="px-3 py-1.5 rounded-full bg-[#C8102E] hover:bg-[#A30D25] text-white text-[11px] font-black uppercase tracking-wider flex items-center gap-1 shadow-xs"
+                aria-label="Donate"
+              >
+                <Heart className="w-3 h-3 fill-white" />
+                <span>Donate</span>
+              </Link>
+
               {isAuthenticated && user ? (
                 <button
                   type="button"
@@ -364,7 +376,7 @@ export function Navbar() {
         {/* Mobile Menu Dropdown */}
         {isOpen && (
           <div
-            className="md:hidden bg-[#180E07]/95 backdrop-blur-xl border-b border-[#4A2F1A]/70 shadow-2xl px-6 py-6 space-y-4"
+            className="lg:hidden bg-[#180E07]/95 backdrop-blur-xl border-b border-[#4A2F1A]/70 shadow-2xl px-6 py-6 space-y-4"
             style={{ fontFamily: 'var(--font-the-seasons), "The Seasons", Georgia, serif' }}
           >
             {/* Mobile User Profile Section if Authenticated */}
@@ -421,13 +433,25 @@ export function Navbar() {
             )}
 
             <nav className="flex flex-col gap-3 text-base tracking-widest">
+              {/* Highlighted Mobile Donate Button */}
+              <div className="pb-1 font-sans tracking-normal">
+                <Link
+                  href="/donate"
+                  onClick={() => setIsOpen(false)}
+                  className="w-full py-3 px-4 rounded-2xl bg-[#C8102E] hover:bg-[#A30D25] text-white font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg transition-all"
+                >
+                  <Heart className="w-4 h-4 fill-white" />
+                  <span>Donate to Kalikasan</span>
+                </Link>
+              </div>
+
               {navItems.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
                   className={`py-2 px-3 rounded-xl uppercase transition-colors ${pathname === item.href
-                      ? "text-[#e1ffdd] bg-white/10 font-bold"
-                      : "text-[#F0E6D2]/90 hover:text-white"
+                    ? "text-[#e1ffdd] bg-white/10 font-bold"
+                    : "text-[#F0E6D2]/90 hover:text-white"
                     }`}
                 >
                   {item.label}
@@ -525,8 +549,8 @@ export function Navbar() {
                       type="button"
                       onClick={() => handleSelectPresetAvatar(preset.url)}
                       className={`relative p-2 rounded-2xl border transition-all text-center flex flex-col items-center gap-1.5 group cursor-pointer ${isSelected
-                          ? "bg-emerald-950/90 border-emerald-400 ring-2 ring-emerald-400/40 shadow-lg scale-102"
-                          : "bg-white/5 border-white/10 hover:border-emerald-500/40 hover:bg-white/10"
+                        ? "bg-emerald-950/90 border-emerald-400 ring-2 ring-emerald-400/40 shadow-lg scale-102"
+                        : "bg-white/5 border-white/10 hover:border-emerald-500/40 hover:bg-white/10"
                         }`}
                     >
                       <div className="relative w-16 h-16 rounded-xl overflow-hidden border border-white/20 group-hover:scale-105 transition-transform shadow-md">

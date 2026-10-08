@@ -5,7 +5,7 @@ import { Heart, CheckCircle2, Trees, ArrowRight, ShieldCheck, Sparkles } from "l
 import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = {
-  title: "Thank You for Your Support | Kamalayang Kapwa Kalikasan",
+  title: "Thank You for Your Support",
   description: "Your donation record has been successfully logged.",
 };
 
@@ -48,7 +48,7 @@ export default function ThankYouPage() {
           </p>
 
           <p className="text-xs sm:text-sm text-[#536054] leading-relaxed">
-            Once confirmed (typically within 24 to 48 hours), you will receive your official <strong>Electronic Certificate of Green Donation</strong> via email.
+            Our team will review your reference number and contact you once verified.
           </p>
 
           <div className="pt-3 border-t border-slate-100 flex items-center gap-2 text-xs text-[#2E5E34] font-semibold">

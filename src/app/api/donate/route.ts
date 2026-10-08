@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
     const paymentMethod = typeof body?.payment_method === "string" ? body.payment_method : "GCash";
     const { supabase } = await import("@/lib/supabase/client");
     const { error: dbError } = await supabase.from("donations").insert([{
-      donor_name: validated.data.donor_name,
+      donor_name: (validated.data.donor_name && validated.data.donor_name.trim()) ? validated.data.donor_name.trim() : "Anonymous",
       email: validated.data.email,
       amount: validated.data.amount,
       trees: Math.floor(Number(validated.data.amount) / 250),
@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: "Matagumpay na naitala ang impormasyon ng inyong donasyon. Ito ay susuriin (Pending).",
+      message: "Matagumpay na naitala ang donasyon. Susuriin ng aming koponan ang inyong reference number at makikipag-ugnayan sa inyo.",
       data: validated.data,
     });
   } catch {

@@ -24,7 +24,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 const presetAmounts = [
-  { amount: 250, label: "₱250", desc: "1 Native Tree Sapling (Narra / Molave) + GPS geotag" },
+  { amount: 250, label: "₱250", desc: "1 Native Tree Sapling (Narra / Molave)" },
   { amount: 500, label: "₱500", desc: "2 Trees + 1 Year Community Forest Ranger Patrol" },
   { amount: 1000, label: "₱1,000", desc: "Coastal Mangrove Kit (5 Bakawan propagules + protective barrier)" },
   { amount: 2500, label: "₱2,500", desc: "Community Native Tree Nursery Support & Seedbed Kit" },
@@ -50,6 +50,7 @@ export default function DonatePage() {
   const [errorMessage, setErrorMessage] = useState("");
 
   const copyToClipboard = (text: string, field: string) => {
+    if (!text) return;
     navigator.clipboard.writeText(text);
     setCopiedField(field);
     setTimeout(() => setCopiedField(null), 2500);
@@ -100,7 +101,7 @@ export default function DonatePage() {
 
     try {
       const payload = {
-        donor_name: formData.donor_name,
+        donor_name: formData.donor_name.trim() || "Anonymous",
         email: formData.email,
         amount: Number(finalAmount),
         currency: "PHP",
@@ -145,7 +146,9 @@ export default function DonatePage() {
           </h1>
 
           <p className="text-base sm:text-lg text-[#536054] leading-relaxed max-w-2xl mx-auto">
-            100% of public donations fund endemic seedling nurseries, field rations for volunteer patrols, and wave barriers in vulnerable coastal barangays.
+            {siteSettings.stat_donation_percentage
+              ? `${siteSettings.stat_donation_percentage} of public donations fund endemic seedling nurseries, field rations for volunteer patrols, and wave barriers in vulnerable coastal barangays.`
+              : "Public donations fund endemic seedling nurseries, field rations for volunteer patrols, and wave barriers in vulnerable coastal barangays."}
           </p>
         </div>
 
@@ -207,42 +210,57 @@ export default function DonatePage() {
                 </span>
               </div>
 
-              {/* QR Image */}
-              <div className="relative aspect-square max-w-[200px] mx-auto rounded-2xl overflow-hidden border-2 border-blue-500/20 p-2 bg-blue-50/30 flex flex-col items-center justify-center">
-                <div className="relative w-full h-full rounded-xl overflow-hidden bg-white shadow-inner flex items-center justify-center">
-                  <Image
-                    src={siteSettings.gcash_qr_url}
-                    alt="Kamalayang Kapwa Kalikasan GCash QR Code"
-                    fill
-                    sizes="200px"
-                    className="object-cover"
-                  />
+              {/* QR Image or Fallback */}
+              {siteSettings.gcash_qr_url ? (
+                <div className="relative aspect-square max-w-[200px] mx-auto rounded-2xl overflow-hidden border-2 border-blue-500/20 p-2 bg-blue-50/30 flex flex-col items-center justify-center">
+                  <div className="relative w-full h-full rounded-xl overflow-hidden bg-white shadow-inner flex items-center justify-center">
+                    <Image
+                      src={siteSettings.gcash_qr_url}
+                      alt="Kamalayang Kapwa Kalikasan GCash QR Code"
+                      fill
+                      sizes="200px"
+                      className="object-cover"
+                    />
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className="relative aspect-square max-w-[200px] mx-auto rounded-2xl border border-dashed border-blue-300/60 p-4 bg-blue-50/30 flex flex-col items-center justify-center text-center">
+                  <QrCode className="w-10 h-10 text-[#0C3B7C]/50 mb-2" />
+                  <p className="text-[11px] font-semibold text-[#536054]">
+                    Donation details will be posted soon
+                  </p>
+                </div>
+              )}
               <p className="text-[11px] text-center text-[#536054]">
-                Scan directly using your GCash app camera
+                {siteSettings.gcash_qr_url ? "Scan directly using your GCash app camera" : "Official QR code image will appear here once uploaded"}
               </p>
 
               {/* Number and Name Copy */}
               <div className="p-4 rounded-2xl bg-[#F4F8F4] border border-slate-200 space-y-2 text-xs">
                 <div>
                   <span className="text-[11px] text-[#536054] block">Account Name:</span>
-                  <strong className="text-xs text-[#19241A] block">{siteSettings.gcash_name}</strong>
+                  <strong className="text-xs text-[#19241A] block">
+                    {siteSettings.gcash_name || "Donation details will be posted soon"}
+                  </strong>
                 </div>
 
                 <div className="flex items-center justify-between pt-1 border-t border-slate-200">
                   <div>
                     <span className="text-[11px] text-[#536054] block">GCash Number:</span>
-                    <strong className="text-sm text-[#0C3B7C] font-mono">{siteSettings.gcash_number}</strong>
+                    <strong className="text-sm text-[#0C3B7C] font-mono">
+                      {siteSettings.gcash_number || "Donation details will be posted soon"}
+                    </strong>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => copyToClipboard(siteSettings.gcash_number, "gcash")}
-                    className="p-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-[#0C3B7C] transition-colors flex items-center gap-1 font-bold text-[11px] cursor-pointer"
-                  >
-                    {copiedField === "gcash" ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                    <span>{copiedField === "gcash" ? "Copied!" : "Copy"}</span>
-                  </button>
+                  {siteSettings.gcash_number ? (
+                    <button
+                      type="button"
+                      onClick={() => copyToClipboard(siteSettings.gcash_number, "gcash")}
+                      className="p-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-[#0C3B7C] transition-colors flex items-center gap-1 font-bold text-[11px] cursor-pointer"
+                    >
+                      {copiedField === "gcash" ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                      <span>{copiedField === "gcash" ? "Copied!" : "Copy"}</span>
+                    </button>
+                  ) : null}
                 </div>
               </div>
             </div>
@@ -255,7 +273,7 @@ export default function DonatePage() {
                 </div>
                 <div>
                   <h2 className="font-heading font-extrabold text-base text-[#19241A]">
-                    BPI Bank Deposit
+                    Bank Deposit / Transfer
                   </h2>
                   <span className="text-xs text-[#536054]">Online Bank Transfer / OTC</span>
                 </div>
@@ -264,25 +282,33 @@ export default function DonatePage() {
               <div className="p-4 rounded-2xl bg-amber-50/50 border border-amber-200/70 space-y-2 text-xs">
                 <div>
                   <span className="text-[11px] text-[#536054] block">Bank Name:</span>
-                  <strong className="text-xs text-[#19241A]">{siteSettings.bank_name}</strong>
+                  <strong className="text-xs text-[#19241A]">
+                    {siteSettings.bank_name || "Donation details will be posted soon"}
+                  </strong>
                 </div>
                 <div>
                   <span className="text-[11px] text-[#536054] block">Account Name:</span>
-                  <strong className="text-xs text-[#19241A]">{siteSettings.bank_account_name}</strong>
+                  <strong className="text-xs text-[#19241A]">
+                    {siteSettings.bank_account_name || "Donation details will be posted soon"}
+                  </strong>
                 </div>
                 <div className="flex items-center justify-between pt-1 border-t border-amber-200/50">
                   <div>
                     <span className="text-[11px] text-[#536054] block">Account Number:</span>
-                    <strong className="text-sm text-[#8B5A2B] font-mono">{siteSettings.bank_account_number}</strong>
+                    <strong className="text-sm text-[#8B5A2B] font-mono">
+                      {siteSettings.bank_account_number || "Donation details will be posted soon"}
+                    </strong>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => copyToClipboard(siteSettings.bank_account_number, "bank")}
-                    className="p-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-[#8B5A2B] transition-colors flex items-center gap-1 font-bold text-[11px] cursor-pointer"
-                  >
-                    {copiedField === "bank" ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                    <span>{copiedField === "bank" ? "Copied!" : "Copy"}</span>
-                  </button>
+                  {siteSettings.bank_account_number ? (
+                    <button
+                      type="button"
+                      onClick={() => copyToClipboard(siteSettings.bank_account_number, "bank")}
+                      className="p-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-[#8B5A2B] transition-colors flex items-center gap-1 font-bold text-[11px] cursor-pointer"
+                    >
+                      {copiedField === "bank" ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                      <span>{copiedField === "bank" ? "Copied!" : "Copy"}</span>
+                    </button>
+                  ) : null}
                 </div>
               </div>
             </div>
@@ -302,7 +328,7 @@ export default function DonatePage() {
                   Log Your Donation
                 </h2>
                 <p className="text-xs sm:text-sm text-[#536054] mt-1 leading-relaxed">
-                  Enter your receipt reference number so our volunteer finance team can verify and send your official e-certificate of appreciation.
+                  Enter your receipt reference number. Our team will review your reference number and contact you.
                 </p>
               </div>
 
@@ -333,7 +359,7 @@ export default function DonatePage() {
                     </label>
                     <input
                       type="text"
-                      placeholder="e.g. Juan dela Cruz or Anonymous"
+                      placeholder="e.g. Juan dela Cruz or leave blank for Anonymous"
                       value={formData.donor_name}
                       onChange={(e) => setFormData({ ...formData, donor_name: e.target.value })}
                       className="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#2E5E34]"
@@ -342,7 +368,7 @@ export default function DonatePage() {
 
                   <div className="space-y-1.5">
                     <label className="block text-xs font-bold text-[#19241A] uppercase tracking-wide">
-                      Email Address (For E-Receipt)
+                      Email Address (For Verification &amp; Receipt)
                     </label>
                     <input
                       type="email"

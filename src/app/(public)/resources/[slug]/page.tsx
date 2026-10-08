@@ -26,16 +26,16 @@ interface Props {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   try {
     const { slug } = await params;
-    if (!slug) return { title: "Gabay at Edukasyon | Kamalayang Kapwa Kalikasan" };
+    if (!slug) return { title: "Gabay at Edukasyon" };
     const resource = await fetchPublicResourceBySlugOrId(slug);
-    if (!resource) return { title: "Artikulo Hindi Natagpuan | Kamalayang Kapwa Kalikasan" };
+    if (!resource) return { title: "Artikulo Hindi Natagpuan" };
 
     return {
-      title: `${resource.title} | Kamalayang Kapwa Kalikasan`,
+      title: resource.title,
       description: resource.summary,
     };
   } catch {
-    return { title: "Gabay at Edukasyon | Kamalayang Kapwa Kalikasan" };
+    return { title: "Gabay at Edukasyon" };
   }
 }
 

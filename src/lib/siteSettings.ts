@@ -95,6 +95,15 @@ export async function updateSiteSettings(settings: Partial<SiteSettings>): Promi
       "contact_phone",
       "office_address",
       "office_hours",
+      "dpo_name",
+      "dpo_email",
+      "stat_trees_planted",
+      "stat_volunteers",
+      "stat_waste_diverted",
+      "stat_hectares",
+      "stat_survival_rate",
+      "stat_gps_tracked",
+      "stat_donation_percentage",
     ];
 
     const rows = settingKeys.map((k) => ({

@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase/client";
 import { Program, Resource, NewsEvent, GalleryItem, Partner } from "@/types";
+import { resolveAuthorName } from "@/lib/supabase/adminStore";
 
 // Helper for consistent error logging
 function logError(context: string, error: any) {
@@ -22,6 +23,7 @@ export interface PublicDispatch {
   category: string;
   summary: string;
   body: string;
+  author?: string;
   image_url?: string;
   published_at?: string;
   created_at: string;
@@ -64,6 +66,7 @@ export async function fetchPublicHomeDispatches(): Promise<PublicDispatch[]> {
         category: a.category || "Field Report",
         summary: a.summary || a.body?.slice(0, 160) || "",
         body: a.body || "",
+        author: resolveAuthorName((a as any).author),
         image_url: a.image_url || undefined,
         published_at: a.published_at || a.created_at,
         created_at: a.created_at,
@@ -177,7 +180,7 @@ export async function fetchPublicNewsEvents(): Promise<NewsEvent[]> {
           event_date: (a.published_at || a.created_at || "").split("T")[0],
           location: "National Headquarters / Sierra Madre",
           cover_image: a.image_url || "/images/bg2.jpg",
-          organizer: "Kamalayang Kapwa Kalikasan",
+          organizer: resolveAuthorName((a as any).author),
           is_featured: false,
         });
       }
@@ -233,6 +236,7 @@ export async function fetchMemberAnnouncements(): Promise<PublicDispatch[]> {
         category: a.category || "General",
         summary: a.summary || a.body?.slice(0, 160) || "",
         body: a.body || "",
+        author: resolveAuthorName((a as any).author),
         image_url: a.image_url || undefined,
         published_at: a.published_at || a.created_at,
         created_at: a.created_at,
