@@ -59,9 +59,10 @@ async function fetchItem(slug: string) {
       excerpt: ev.description || "",
       body: ev.description || "",
       event_date: (ev.event_date || ev.created_at || "").split("T")[0],
-      location: ev.location || "Tanay, Rizal",
+      location: ev.location || "",
       cover_image: ev.image_url || "/images/bg2.jpg",
       organizer: "Kamalayang Kapwa Kalikasan",
+      status: (ev.status || "upcoming").toLowerCase(),
     };
   }
 
@@ -129,16 +130,44 @@ export default async function NewsEventDetailPage({ params }: Props) {
             <Badge variant={item.type === "event" ? "brown" : "default"}>
               {item.type === "event" ? "Kaganapan / Event" : "Balita / News"}
             </Badge>
+
+            {item.type === "event" && (
+              <>
+                {item.status === "ongoing" && (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-black bg-emerald-950 text-emerald-300 border border-emerald-500/40 animate-pulse">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                    <span>● Kasalukuyang Nagaganap / Ongoing</span>
+                  </span>
+                )}
+                {(item.status === "completed" || item.status === "past") && (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-800 text-slate-300 border border-slate-600">
+                    <span>✓ Tapos Na / Completed Action</span>
+                  </span>
+                )}
+                {item.status !== "ongoing" && item.status !== "completed" && item.status !== "past" && (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-950 text-amber-300 border border-amber-500/40">
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                    <span>Paparating / Upcoming</span>
+                  </span>
+                )}
+              </>
+            )}
+
             <span className="text-xs text-slate-400">•</span>
             <span className="text-xs text-slate-300 flex items-center gap-1 font-medium">
               <Calendar className="w-3.5 h-3.5 text-emerald-400" />
               {formatDate(item.event_date)}
             </span>
-            <span className="text-xs text-slate-400">•</span>
-            <span className="text-xs text-slate-300 flex items-center gap-1">
-              <MapPin className="w-3.5 h-3.5 text-amber-400" />
-              {item.location}
-            </span>
+
+            {item.location && (
+              <>
+                <span className="text-xs text-slate-400">•</span>
+                <span className="text-xs text-slate-300 flex items-center gap-1">
+                  <MapPin className="w-3.5 h-3.5 text-amber-400" />
+                  {item.location}
+                </span>
+              </>
+            )}
           </div>
 
           <h1 className="font-heading text-3xl sm:text-4xl md:text-5xl font-extrabold text-white leading-tight">

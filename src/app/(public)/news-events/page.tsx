@@ -147,6 +147,10 @@ export default function NewsEventsPage() {
           ) : (
             filteredItems.map((item) => {
               const isEvent = item.type === "event";
+              const rawStatus = (item.status || "upcoming").toLowerCase();
+              const isOngoing = isEvent && rawStatus === "ongoing";
+              const isCompleted = isEvent && (rawStatus === "completed" || rawStatus === "past");
+              const isUpcoming = isEvent && !isOngoing && !isCompleted;
 
               return (
                 <article
@@ -163,18 +167,48 @@ export default function NewsEventsPage() {
                       unoptimized
                     />
                     
-                    <div className="absolute top-3 left-3">
-                      <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase shadow-sm ${
-                        isEvent ? "bg-[#DC2626] text-white" : "bg-[#2563EB] text-white"
-                      }`}>
-                        {isEvent ? "Mobilization" : "Field Report"}
-                      </span>
+                    <div className="absolute top-3 left-3 flex items-center gap-1.5 flex-wrap">
+                      {isEvent ? (
+                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase shadow-md flex items-center gap-1.5 ${
+                          isOngoing
+                            ? "bg-emerald-500 text-slate-950 animate-pulse"
+                            : isCompleted
+                            ? "bg-slate-700 text-slate-200"
+                            : "bg-[#DC2626] text-white"
+                        }`}>
+                          {isOngoing && <span className="w-1.5 h-1.5 rounded-full bg-slate-950" />}
+                          <span>{isOngoing ? "● ONGOING RALLY" : isCompleted ? "✓ COMPLETED" : "UPCOMING MOBILIZATION"}</span>
+                        </span>
+                      ) : (
+                        <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase shadow-sm bg-[#2563EB] text-white">
+                          Field Report
+                        </span>
+                      )}
                     </div>
                   </div>
 
                   <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
                     <div>
-                      <div className="flex items-center gap-3 text-xs text-slate-400 mb-2.5 flex-wrap">
+                      {/* Status & Meta info */}
+                      <div className="flex items-center gap-2.5 text-xs text-slate-400 mb-2.5 flex-wrap">
+                        {isOngoing && (
+                          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-950 text-emerald-300 border border-emerald-500/40 animate-pulse">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                            <span>Kasalukuyang Nagaganap</span>
+                          </span>
+                        )}
+                        {isCompleted && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-800 text-slate-300 border border-slate-600">
+                            <span>Tapos Na / Completed</span>
+                          </span>
+                        )}
+                        {isUpcoming && (
+                          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-950 text-amber-300 border border-amber-500/40">
+                            <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                            <span>Paparating</span>
+                          </span>
+                        )}
+
                         <span className="flex items-center gap-1 font-semibold text-slate-200">
                           <Calendar className="w-3.5 h-3.5 text-emerald-400" />
                           {formatDate(item.event_date)}
@@ -184,11 +218,16 @@ export default function NewsEventsPage() {
                           <User className="w-3.5 h-3.5 text-emerald-400" />
                           {resolveAuthorName(item.organizer)}
                         </span>
-                        <span>•</span>
-                        <span className="flex items-center gap-1 text-slate-300 truncate">
-                          <MapPin className="w-3.5 h-3.5 text-amber-400" />
-                          {item.location}
-                        </span>
+
+                        {item.location && (
+                          <>
+                            <span>•</span>
+                            <span className="flex items-center gap-1 text-slate-300 truncate">
+                              <MapPin className="w-3.5 h-3.5 text-amber-400" />
+                              {item.location}
+                            </span>
+                          </>
+                        )}
                       </div>
 
                       <h2 className="font-heading font-bold text-lg sm:text-xl text-white group-hover:text-emerald-400 transition-colors leading-snug mb-2">
@@ -222,17 +261,23 @@ export default function NewsEventsPage() {
                           href={`/news-events/${item.slug}`}
                           className="text-emerald-400 hover:underline inline-flex items-center gap-1"
                         >
-                          <span>Read Story</span>
+                          <span>{isEvent ? "View Details" : "Read Story"}</span>
                           <ArrowRight className="w-3.5 h-3.5" />
                         </Link>
                       </div>
 
                       {isEvent && (
                         <Link
-                          href="/get-involved"
-                          className="text-amber-400 hover:underline text-[11px] shrink-0"
+                          href={isCompleted ? `/news-events/${item.slug}` : "/get-involved"}
+                          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 ${
+                            isOngoing
+                              ? "bg-[#22C55E] hover:bg-[#16A34A] text-slate-950 font-black animate-pulse"
+                              : isCompleted
+                              ? "text-slate-400 hover:text-white"
+                              : "text-amber-400 hover:underline text-[11px]"
+                          }`}
                         >
-                          Register &rarr;
+                          {isOngoing ? "Join Ongoing →" : isCompleted ? "Recap →" : "Register →"}
                         </Link>
                       )}
                     </div>

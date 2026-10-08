@@ -80,60 +80,47 @@ export async function fetchPublicHomeDispatches(): Promise<PublicDispatch[]> {
 }
 
 /**
- * 2. HOME PAGE UPCOMING RALLIES:
- * Reads events where status <> 'draft' AND event_date >= now(), ordered by event_date asc, limit 3.
+ * 2. HOME PAGE RALLIES & MOBILIZATIONS:
+ * Reads events where status <> 'draft', prioritizing 'ongoing' events, then 'upcoming', then 'completed'.
  */
 export async function fetchPublicHomeUpcomingRallies(): Promise<PublicRallyEvent[]> {
   try {
-    const nowIso = new Date().toISOString();
-    const todayStr = nowIso.split("T")[0]; // YYYY-MM-DD
-    const nowMs = Date.now() - 24 * 60 * 60 * 1000; // allow today's events
-
-    let { data, error } = await supabase
+    const { data, error } = await supabase
       .from("events")
       .select("id, title, description, location, event_date, image_url, status, created_at")
       .neq("status", "draft")
-      .gte("event_date", todayStr)
-      .order("event_date", { ascending: true })
-      .limit(3);
+      .order("created_at", { ascending: false });
 
     if (error) {
-      logError("fetchPublicHomeUpcomingRallies.gte", error);
-    }
-
-    // Fallback if gte didn't match due to custom text date strings (e.g. "November 21, 2026")
-    if (!data || data.length === 0) {
-      const fallbackRes = await supabase
-        .from("events")
-        .select("id, title, description, location, event_date, image_url, status, created_at")
-        .neq("status", "draft")
-        .order("created_at", { ascending: false });
-
-      if (fallbackRes.data && fallbackRes.data.length > 0) {
-        data = fallbackRes.data
-          .filter((e) => {
-            if (!e.event_date) return false;
-            const parsed = Date.parse(e.event_date);
-            return !isNaN(parsed) && parsed >= nowMs;
-          })
-          .sort((a, b) => {
-            const tA = Date.parse(a.event_date) || 0;
-            const tB = Date.parse(b.event_date) || 0;
-            return tA - tB;
-          })
-          .slice(0, 3);
-      }
+      logError("fetchPublicHomeUpcomingRallies", error);
+      return [];
     }
 
     if (data && data.length > 0) {
-      return data.map((e) => ({
+      // Sort: ongoing first, then upcoming, then completed/past
+      const sorted = [...data].sort((a, b) => {
+        const statusOrder: Record<string, number> = {
+          ongoing: 1,
+          upcoming: 2,
+          published: 3,
+          completed: 4,
+          past: 5,
+          cancelled: 6,
+        };
+        const orderA = statusOrder[a.status?.toLowerCase()] || 3;
+        const orderB = statusOrder[b.status?.toLowerCase()] || 3;
+        if (orderA !== orderB) return orderA - orderB;
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      });
+
+      return sorted.slice(0, 6).map((e) => ({
         id: e.id,
         title: e.title,
         description: e.description || "",
-        location: e.location || "Tanay, Rizal",
+        location: e.location || "",
         event_date: e.event_date || e.created_at,
         image_url: e.image_url || undefined,
-        status: e.status || "upcoming",
+        status: (e.status || "upcoming").toLowerCase(),
         created_at: e.created_at,
       }));
     }
@@ -161,7 +148,7 @@ export async function fetchPublicNewsEvents(): Promise<NewsEvent[]> {
         .from("events")
         .select("id, title, description, location, event_date, image_url, status, created_at")
         .neq("status", "draft")
-        .order("event_date", { ascending: true }),
+        .order("created_at", { ascending: false }),
     ]);
 
     if (annRes.error) logError("fetchPublicNewsEvents.announcements", annRes.error);
@@ -179,7 +166,7 @@ export async function fetchPublicNewsEvents(): Promise<NewsEvent[]> {
           excerpt: a.summary || a.body?.slice(0, 160) || "",
           body: a.body || "",
           event_date: (a.published_at || a.created_at || "").split("T")[0],
-          location: "National Headquarters / Sierra Madre",
+          location: "",
           cover_image: a.image_url || "/images/bg2.jpg",
           organizer: resolveAuthorName((a as any).author),
           is_featured: false,
@@ -197,10 +184,11 @@ export async function fetchPublicNewsEvents(): Promise<NewsEvent[]> {
           excerpt: e.description || "",
           body: e.description || "",
           event_date: (e.event_date || e.created_at || "").split("T")[0],
-          location: e.location || "Tanay, Rizal",
+          location: e.location || "",
           cover_image: e.image_url || "/images/bg2.jpg",
           organizer: "Kamalayang Kapwa Kalikasan",
           is_featured: true,
+          status: (e.status || "upcoming").toLowerCase(),
         });
       }
     }
@@ -275,10 +263,11 @@ export async function fetchPublicPrograms(): Promise<Program[]> {
         detailed_content: p.description,
         status: (p.status === "past" ? "completed" : p.status || "ongoing") as Program["status"],
         cover_image: p.cover_image || "/images/bg2.jpg",
-        start_date: p.start_date || undefined,
-        location: "Sierra Madre & Southern Luzon",
-        beneficiaries: "Indigenous Custodians & Forest Barangays",
-        pillars: ["Reforestation", "Environmental Justice"],
+        start_date: (p.start_date || p.created_at || "") as string,
+        end_date: (p.end_date || undefined) as string | undefined,
+        location: (p as any).location || "",
+        beneficiaries: (p as any).beneficiaries || "",
+        pillars: (p as any).pillars || [],
       }));
     }
   } catch (err: any) {

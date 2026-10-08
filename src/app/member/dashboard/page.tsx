@@ -20,7 +20,8 @@ import {
   Eye, 
   X, 
   Users,
-  CheckCircle2
+  CheckCircle2,
+  Bell
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/components/providers/AuthProvider";
@@ -104,6 +105,48 @@ export default function MemberDashboardPage() {
   const [copiedPostId, setCopiedPostId] = useState<string | null>(null);
   const [highlightedPostId, setHighlightedPostId] = useState<string | null>(null);
   const [likedPosts, setLikedPosts] = useState<string[]>([]);
+  const [readPostIds, setReadPostIds] = useState<string[]>(() => {
+    if (typeof window === "undefined") return [];
+    try {
+      const stored = localStorage.getItem("kkk_read_announcements");
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const markPostAsRead = (id: string) => {
+    if (!id) return;
+    setReadPostIds((prev) => {
+      if (prev.includes(id)) return prev;
+      const next = [...prev, id];
+      if (typeof window !== "undefined") {
+        try {
+          localStorage.setItem("kkk_read_announcements", JSON.stringify(next));
+          window.dispatchEvent(new CustomEvent("kkk_notifications_read", { detail: next }));
+        } catch {}
+      }
+      return next;
+    });
+  };
+
+  const markAllAsRead = () => {
+    const allIds = announcements.map((a) => a.id);
+    setReadPostIds(allIds);
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem("kkk_read_announcements", JSON.stringify(allIds));
+        window.dispatchEvent(new CustomEvent("kkk_notifications_read", { detail: allIds }));
+      } catch {}
+    }
+  };
+
+  // Automatically mark announcement as read when modal opens
+  useEffect(() => {
+    if (selectedAnnouncement) {
+      markPostAsRead(selectedAnnouncement.id);
+    }
+  }, [selectedAnnouncement]);
 
   // Load announcements, events, and resources live from Supabase
   const loadData = async (silent = false) => {
@@ -177,7 +220,7 @@ export default function MemberDashboardPage() {
         type: "Tree Growing",
         date: e.event_date || "Upcoming",
         time: "8:00 AM - 1:00 PM",
-        location: e.location || "Tanay, Rizal",
+        location: e.location || "",
         description: e.description || "",
         targetVolunteers: 100,
         signedUp: 0,
@@ -194,7 +237,7 @@ export default function MemberDashboardPage() {
         format: "Field Manual",
         downloadUrl: r.content?.startsWith("http") ? r.content : `/resources/${r.slug || r.id}`,
         fileSize: "PDF Document",
-        tags: ["Sierra Madre", "Conservation"],
+        tags: [],
         imageUrl: r.cover_image || undefined,
         createdAt: r.created_at,
       }));
@@ -239,14 +282,6 @@ export default function MemberDashboardPage() {
       console.error("[Error fetching user volunteer/donation records]", err);
     }
   };
-
-  // Reset unread count when opening feed tab
-  useEffect(() => {
-    if (activeTab === "feed" && typeof window !== "undefined") {
-      localStorage.setItem("kkk_member_last_seen", new Date().toISOString());
-      window.dispatchEvent(new Event("kkk_feed_opened"));
-    }
-  }, [activeTab]);
 
   useEffect(() => {
     // Load liked posts from localStorage
@@ -302,14 +337,29 @@ export default function MemberDashboardPage() {
       }
     };
 
+    const handleReadSync = (e: any) => {
+      if (e?.detail && Array.isArray(e.detail)) {
+        setReadPostIds(e.detail);
+      } else if (typeof window !== "undefined") {
+        try {
+          const raw = localStorage.getItem("kkk_read_announcements");
+          if (raw) setReadPostIds(JSON.parse(raw));
+        } catch {}
+      }
+    };
+
     window.addEventListener("kkk_content_updated", handleUpdate);
     window.addEventListener("kkk_likes_updated", handleLikesSync);
+    window.addEventListener("kkk_notifications_read", handleReadSync);
     window.addEventListener("storage", handleLikesSync);
+    window.addEventListener("storage", handleReadSync);
 
     return () => {
       window.removeEventListener("kkk_content_updated", handleUpdate);
       window.removeEventListener("kkk_likes_updated", handleLikesSync);
+      window.removeEventListener("kkk_notifications_read", handleReadSync);
       window.removeEventListener("storage", handleLikesSync);
+      window.removeEventListener("storage", handleReadSync);
     };
   }, [user?.email]);
 
@@ -362,6 +412,9 @@ export default function MemberDashboardPage() {
   const totalVerifiedDonations = donationRecords
     .filter((d) => d.status?.toLowerCase() === "verified")
     .reduce((sum, d) => sum + (Number(d.amount) || 0), 0);
+
+  const unreadAnnouncements = announcements.filter((a) => !readPostIds.includes(a.id));
+  const unreadCount = unreadAnnouncements.length;
 
   return (
     <div className="space-y-8 text-white" id="member-news-feed">
@@ -419,11 +472,60 @@ export default function MemberDashboardPage() {
         </div>
       </div>
 
+      {/* Unread Notifications Alert Banner */}
+      {unreadCount > 0 && (
+        <div className="p-4 sm:p-5 rounded-3xl bg-gradient-to-r from-amber-950/70 via-[#1A2E1C]/80 to-black/80 border-2 border-amber-500/40 shadow-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 animate-in fade-in">
+          <div className="flex items-start sm:items-center gap-3.5">
+            <div className="w-11 h-11 rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/40 flex items-center justify-center shrink-0 shadow-inner">
+              <Bell className="w-5 h-5 animate-bounce" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-amber-400 text-slate-950 shadow-sm animate-pulse">
+                  {unreadCount} Unread Official Bulletin{unreadCount > 1 ? "s" : ""}
+                </span>
+                <span className="text-xs text-amber-200/90 font-medium">Important Updates for Eco-Stewards</span>
+              </div>
+              <p className="text-xs sm:text-sm text-slate-200 mt-1 line-clamp-1">
+                Latest: <strong className="text-white">{unreadAnnouncements[0]?.title}</strong>
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 self-end md:self-center shrink-0">
+            <Button
+              size="sm"
+              onClick={() => {
+                setActiveTab("feed");
+                setSelectedAnnouncement(unreadAnnouncements[0]);
+                markPostAsRead(unreadAnnouncements[0]?.id);
+              }}
+              className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs rounded-xl cursor-pointer shadow-md"
+            >
+              <span>View Latest</span>
+            </Button>
+            <button
+              type="button"
+              onClick={markAllAsRead}
+              className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white text-xs font-semibold border border-white/10 transition-colors cursor-pointer"
+            >
+              Mark All as Read
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Tabs Switcher: News Feed vs Events vs Resources vs Volunteering vs Donations */}
       <div className="space-y-6">
         <div className="flex flex-wrap items-center gap-2 border-b border-white/10 pb-3">
           {[
-            { id: "feed", label: `News Feed & Announcements (${announcements.length})`, icon: Megaphone, badge: "Live" },
+            {
+              id: "feed",
+              label: `News Feed & Announcements (${announcements.length})`,
+              icon: Megaphone,
+              badge: unreadCount > 0 ? `${unreadCount} Unread` : "Live",
+              badgeStyle: unreadCount > 0 ? "bg-amber-400 text-slate-950 font-black animate-pulse shadow-sm" : "bg-emerald-500/20 text-emerald-300 font-bold",
+            },
             { id: "events", label: `Event Programs (${eventPrograms.length})`, icon: Calendar },
             { id: "resources", label: `Shared Resources (${resources.length})`, icon: BookOpen },
             { id: "volunteering", label: `Volunteer Missions (${volunteerRecords.length})`, icon: Clock },
@@ -444,7 +546,7 @@ export default function MemberDashboardPage() {
                 <Icon className={`w-4 h-4 ${isActive ? "text-[#e1ffdd]" : "text-slate-400"}`} />
                 <span>{tab.label}</span>
                 {tab.badge && (
-                  <span className="px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[9px] font-black uppercase">
+                  <span className={`px-2 py-0.5 rounded-full text-[9px] uppercase ${tab.badgeStyle || "bg-emerald-500/20 text-emerald-300"}`}>
                     {tab.badge}
                   </span>
                 )}
@@ -518,7 +620,7 @@ export default function MemberDashboardPage() {
                     >
                       <div className="space-y-3.5">
                         {/* Author Header & Category Pill */}
-                        <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center justify-between gap-2 flex-wrap">
                           <div className="flex items-center gap-2.5">
                             <div className="relative w-9 h-9 rounded-full overflow-hidden border border-emerald-500/40 bg-black shrink-0">
                               <Image
@@ -540,9 +642,17 @@ export default function MemberDashboardPage() {
                             </div>
                           </div>
 
-                          <span className="px-2.5 py-0.5 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-500/40 text-[10px] font-bold">
-                            {post.category}
-                          </span>
+                          <div className="flex items-center gap-2">
+                            {!readPostIds.includes(post.id) && (
+                              <span className="px-2 py-0.5 rounded-full bg-amber-400 text-slate-950 text-[10px] font-black uppercase tracking-wider animate-pulse flex items-center gap-1 shrink-0 shadow-sm">
+                                <span className="w-1.5 h-1.5 rounded-full bg-slate-950" />
+                                Unread
+                              </span>
+                            )}
+                            <span className="px-2.5 py-0.5 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-500/40 text-[10px] font-bold">
+                              {post.category}
+                            </span>
+                          </div>
                         </div>
 
                         {/* Title */}
@@ -609,7 +719,10 @@ export default function MemberDashboardPage() {
 
                         <button
                           type="button"
-                          onClick={() => setSelectedAnnouncement(post)}
+                          onClick={() => {
+                            markPostAsRead(post.id);
+                            setSelectedAnnouncement(post);
+                          }}
                           className="text-emerald-400 hover:text-emerald-300 font-bold flex items-center gap-1 text-xs cursor-pointer"
                         >
                           <span>Full Details</span>
@@ -696,10 +809,12 @@ export default function MemberDashboardPage() {
                             <Calendar className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
                             <span>{ev.date}</span>
                           </div>
-                          <div className="flex items-center gap-1.5">
-                            <MapPin className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                            <span className="truncate">{ev.location}</span>
-                          </div>
+                          {ev.location && (
+                            <div className="flex items-center gap-1.5">
+                              <MapPin className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                              <span className="truncate">{ev.location}</span>
+                            </div>
+                          )}
                         </div>
 
                         <p className="text-xs text-slate-300 line-clamp-3 leading-relaxed">

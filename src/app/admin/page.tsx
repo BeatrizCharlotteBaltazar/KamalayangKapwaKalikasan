@@ -101,6 +101,7 @@ import { SiteSettings } from "@/types";
 
 type AdminTab =
   | "posts"
+  | "programs_events"
   | "events"
   | "programs"
   | "resources"
@@ -121,6 +122,7 @@ interface DeleteConfirmation {
 
 export default function AdminDashboardPage() {
   const [activeTab, setActiveTab] = useState<AdminTab>("posts");
+  const [programsEventsFilter, setProgramsEventsFilter] = useState<"all" | "programs" | "events">("all");
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [adminProfile, setAdminProfile] = useState<{
@@ -177,17 +179,17 @@ export default function AdminDashboardPage() {
   const [formCategory, setFormCategory] = useState("Urgent Mobilization");
   const [formSummary, setFormSummary] = useState("");
   const [formContent, setFormContent] = useState("");
-  const [formLocation, setFormLocation] = useState("Tanay, Rizal");
-  const [formDate, setFormDate] = useState("November 21, 2026");
-  const [formTime, setFormTime] = useState("7:00 AM - 1:00 PM");
-  const [formTargetVolunteers, setFormTargetVolunteers] = useState(150);
+  const [formLocation, setFormLocation] = useState("");
+  const [formDate, setFormDate] = useState("");
+  const [formTime, setFormTime] = useState("8:00 AM - 12:00 PM");
+  const [formTargetVolunteers, setFormTargetVolunteers] = useState(50);
   const [formEventType, setFormEventType] = useState<AdminEvent["type"]>("Tree Growing");
   const [formResourceFormat, setFormResourceFormat] = useState<AdminResource["format"]>("PDF Document");
-  const [formDownloadUrl, setFormDownloadUrl] = useState("/resources/guide.pdf");
-  const [formFileSize, setFormFileSize] = useState("3.5 MB");
-  const [formTags, setFormTags] = useState("Sierra Madre, Conservation");
-  const [formAlbum, setFormAlbum] = useState("Tree Planting");
-  const [formBeneficiaries, setFormBeneficiaries] = useState("Dumagat Ancestral Domain");
+  const [formDownloadUrl, setFormDownloadUrl] = useState("");
+  const [formFileSize, setFormFileSize] = useState("");
+  const [formTags, setFormTags] = useState("");
+  const [formAlbum, setFormAlbum] = useState("Field Action");
+  const [formBeneficiaries, setFormBeneficiaries] = useState("");
   const [formProgramStatus, setFormProgramStatus] = useState<AdminProgram["status"]>("ongoing");
   const [formPinned, setFormPinned] = useState(false);
   const [formIsPublished, setFormIsPublished] = useState(true);
@@ -425,6 +427,22 @@ export default function AdminDashboardPage() {
     }
   };
 
+  const handleUpdateProgramStatus = async (item: AdminProgram, newStatus: AdminProgram["status"]) => {
+    setErrorMessage(null);
+    try {
+      await updateProgram(item.id, { status: newStatus });
+      setPrograms(await fetchPrograms());
+      refreshStatsOnly();
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new Event("kkk_content_updated"));
+        window.dispatchEvent(new Event("storage"));
+      }
+      showFeedback(`Program "${item.title}" marked as ${newStatus}!`);
+    } catch (err: any) {
+      setErrorMessage(`Failed to update program status: ${err?.message || "Database error"}`);
+    }
+  };
+
   const handleTogglePublishResource = async (item: AdminResource) => {
     const newStatus = !item.isPublished;
     setErrorMessage(null);
@@ -611,17 +629,17 @@ export default function AdminDashboardPage() {
     setFormCategory("Urgent Mobilization");
     setFormSummary("");
     setFormContent("");
-    setFormLocation("Tanay, Rizal");
-    setFormDate("November 21, 2026");
-    setFormTime("7:00 AM - 1:00 PM");
-    setFormTargetVolunteers(150);
+    setFormLocation("");
+    setFormDate(new Date().toISOString().split("T")[0]);
+    setFormTime("8:00 AM - 12:00 PM");
+    setFormTargetVolunteers(50);
     setFormEventType("Tree Growing");
     setFormResourceFormat("PDF Document");
-    setFormDownloadUrl("/resources/guide.pdf");
-    setFormFileSize("3.5 MB");
-    setFormTags("Sierra Madre, Conservation");
-    setFormAlbum("Tree Planting");
-    setFormBeneficiaries("Dumagat Ancestral Domain");
+    setFormDownloadUrl("");
+    setFormFileSize("");
+    setFormTags("");
+    setFormAlbum("Field Action");
+    setFormBeneficiaries("");
     setFormProgramStatus("ongoing");
     setFormPinned(false);
     setFormIsPublished(true);
@@ -644,17 +662,17 @@ export default function AdminDashboardPage() {
     setFormCategory(item.category || "General");
     setFormSummary(item.excerpt || item.description || "");
     setFormContent(item.content || item.detailedContent || item.description || item.caption || "");
-    setFormLocation(item.location || "Tanay, Rizal");
+    setFormLocation(item.location || "");
     setFormDate(item.date || "Upcoming");
     setFormTime(item.time || "8:00 AM");
-    setFormTargetVolunteers(item.targetVolunteers || 150);
+    setFormTargetVolunteers(item.targetVolunteers || 0);
     setFormEventType(item.type || "Tree Growing");
     setFormResourceFormat(item.format || "PDF Document");
-    setFormDownloadUrl(item.downloadUrl || "/resources/guide.pdf");
-    setFormFileSize(item.fileSize || "3.5 MB");
+    setFormDownloadUrl(item.downloadUrl || "");
+    setFormFileSize(item.fileSize || "");
     setFormTags((item.tags || []).join(", "));
-    setFormAlbum(item.album || "Tree Planting");
-    setFormBeneficiaries(item.beneficiaries || "Dumagat Ancestral Domain");
+    setFormAlbum(item.album || "Field Action");
+    setFormBeneficiaries(item.beneficiaries || "");
     setFormProgramStatus(item.status || "ongoing");
     setFormPinned(!!item.pinned);
     setFormIsPublished(item.isPublished !== false);
@@ -716,11 +734,11 @@ export default function AdminDashboardPage() {
             await updateEvent(editingItemId, {
               title: formTitle.trim(),
               type: formEventType,
-              location: formLocation.trim() || "Sierra Madre",
+              location: formLocation.trim(),
               date: formDate.trim() || "Upcoming",
               time: formTime.trim() || "8:00 AM",
               description: formContent.trim(),
-              targetVolunteers: Number(formTargetVolunteers) || 100,
+              targetVolunteers: Number(formTargetVolunteers) || 0,
               imageUrl: formImageUrl,
               animalSpeciesId: finalSpeciesId,
               animalSpeciesName: finalSpeciesName,
@@ -760,8 +778,8 @@ export default function AdminDashboardPage() {
               category: formCategory as AdminResource["category"],
               format: formResourceFormat,
               description: formContent.trim(),
-              downloadUrl: formDownloadUrl.trim() || "/resources/guide.pdf",
-              fileSize: formFileSize.trim() || "3.5 MB",
+              downloadUrl: formDownloadUrl.trim(),
+              fileSize: formFileSize.trim(),
               tags: parsedTags,
               imageUrl: formImageUrl,
               isPublished: formIsPublished,
@@ -814,11 +832,11 @@ export default function AdminDashboardPage() {
             await createEvent({
               title: formTitle.trim(),
               type: formEventType,
-              location: formLocation.trim() || "Tanay, Rizal",
+              location: formLocation.trim(),
               date: formDate.trim() || "Upcoming",
-              time: formTime.trim() || "7:00 AM - 1:00 PM",
+              time: formTime.trim() || "8:00 AM - 12:00 PM",
               description: formContent.trim(),
-              targetVolunteers: Number(formTargetVolunteers) || 100,
+              targetVolunteers: Number(formTargetVolunteers) || 0,
               status: formIsPublished
                 ? (formDate && !isNaN(Date.parse(formDate)) && new Date(formDate).getTime() > Date.now()
                   ? "upcoming"
@@ -838,11 +856,11 @@ export default function AdminDashboardPage() {
           case "program":
             await createProgram({
               title: formTitle.trim(),
-              category: formCategory || "Forestry & Reforestation",
+              category: formCategory || "Conservation Program",
               description: formSummary.trim() || formContent.slice(0, 160),
               detailedContent: formContent.trim(),
-              location: formLocation.trim() || "Sierra Madre",
-              beneficiaries: formBeneficiaries.trim() || "Indigenous Partners",
+              location: formLocation.trim(),
+              beneficiaries: formBeneficiaries.trim(),
               status: formProgramStatus,
               coverImage: formImageUrl,
               isPublished: formIsPublished,
@@ -858,8 +876,8 @@ export default function AdminDashboardPage() {
               category: formCategory as AdminResource["category"],
               format: formResourceFormat,
               description: formContent.trim(),
-              downloadUrl: formDownloadUrl.trim() || "/resources/guide.pdf",
-              fileSize: formFileSize.trim() || "3.5 MB",
+              downloadUrl: formDownloadUrl.trim(),
+              fileSize: formFileSize.trim(),
               tags: parsedTags,
               imageUrl: formImageUrl,
               isPublished: formIsPublished,
@@ -1171,15 +1189,9 @@ export default function AdminDashboardPage() {
             </div>
             <div className="hidden sm:block text-white/20">&bull;</div>
             <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-blue-400"></span>
-              <span className="text-slate-400">Events:</span>
-              <strong className="text-white font-bold">{events.length}</strong>
-            </div>
-            <div className="hidden sm:block text-white/20">&bull;</div>
-            <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-teal-400"></span>
-              <span className="text-slate-400">Programs:</span>
-              <strong className="text-white font-bold">{programs.length}</strong>
+              <span className="text-slate-400">Programs & Events:</span>
+              <strong className="text-white font-bold">{programs.length + events.length}</strong>
             </div>
             <div className="hidden sm:block text-white/20">&bull;</div>
             <div className="flex items-center gap-2">
@@ -1219,8 +1231,7 @@ export default function AdminDashboardPage() {
           <div className="flex flex-wrap items-center gap-2">
             {[
               { id: "posts", label: "Posts", count: announcements.length, icon: Megaphone },
-              { id: "events", label: "Events", count: events.length, icon: Calendar },
-              { id: "programs", label: "Programs", count: programs.length, icon: Trees },
+              { id: "programs_events", label: "Programs & Events", count: programs.length + events.length, icon: Trees },
               { id: "resources", label: "Resources", count: resources.length, icon: BookOpen },
               { id: "gallery", label: "Gallery", count: galleryItems.length, icon: ImageIcon },
               { id: "volunteers", label: "Volunteers", count: volunteers.length, icon: Users },
@@ -1428,301 +1439,410 @@ export default function AdminDashboardPage() {
         )}
 
         {/* ------------------------------------------------------------- */}
-        {/* TAB 2: EVENTS */}
+        {/* TAB 2: UNIFIED PROGRAMS & EVENTS */}
         {/* ------------------------------------------------------------- */}
-        {activeTab === "events" && (
-          <section className="space-y-4 animate-in fade-in duration-300">
-            <div className="flex items-center justify-between">
+        {(activeTab === "programs_events" || activeTab === "events" || activeTab === "programs") && (
+          <section className="space-y-6 animate-in fade-in duration-300">
+            {/* Header with Sub-Filter and Dual Creation Action Buttons */}
+            <div className="p-5 rounded-2xl bg-[#0A1B11]/90 border border-emerald-500/30 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-lg">
               <div>
-                <h2 className="font-heading text-lg sm:text-xl font-bold text-white">
-                  Events & Mobilizations
-                </h2>
+                <div className="flex items-center gap-2.5 mb-1">
+                  <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
+                    <Trees className="w-4 h-4" />
+                  </div>
+                  <h2 className="font-heading text-lg sm:text-xl font-bold text-white">
+                    Programs & Field Events Management
+                  </h2>
+                </div>
                 <p className="text-xs text-slate-300">
-                  Upcoming tree growing expeditions, coastal cleanups, and community environmental forums.
+                  Manage long-term conservation programs and ground-level environmental actions, rallies, and mobilizations.
                 </p>
               </div>
-              <Button
-                onClick={() => openCreateModal("event")}
-                size="sm"
-                className="bg-[#22C55E] hover:bg-[#16A34A] text-slate-950 font-bold text-xs rounded-xl"
-              >
-                <Plus className="w-3.5 h-3.5 mr-1" />
-                <span>New Event</span>
-              </Button>
+
+              <div className="flex flex-wrap items-center gap-2 shrink-0">
+                <Button
+                  onClick={() => openCreateModal("program")}
+                  size="sm"
+                  className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs rounded-xl shadow cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5 mr-1" />
+                  <span>+ New Program</span>
+                </Button>
+                <Button
+                  onClick={() => openCreateModal("event")}
+                  size="sm"
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5 mr-1" />
+                  <span>+ New Event / Rally</span>
+                </Button>
+              </div>
             </div>
 
-            <div className="space-y-3">
-              {events.length === 0 ? (
-                <div className="p-8 rounded-2xl bg-black/40 border border-white/10 text-center text-xs text-slate-400">
-                  No events scheduled yet. Click the &ldquo;+ Create Post&rdquo; button above to schedule one.
-                </div>
-              ) : (
-                events.map((ev) => (
-                  <div
-                    key={ev.id}
-                    className="p-4 sm:p-5 rounded-2xl bg-[#0A1B11]/80 hover:bg-[#0A1B11]/95 border border-blue-500/20 hover:border-blue-500/40 transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-md"
-                  >
-                    <div className="flex items-start sm:items-center gap-4 min-w-0 flex-1">
-                      {ev.imageUrl ? (
-                        <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden shrink-0 border border-white/10 bg-black">
-                          <Image
-                            src={ev.imageUrl}
-                            alt={ev.title}
-                            fill
-                            sizes="80px"
-                            className="object-cover"
-                            unoptimized
-                          />
-                        </div>
-                      ) : (
-                        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-blue-950/40 border border-blue-500/20 flex items-center justify-center shrink-0 text-blue-400">
-                          <Calendar className="w-6 h-6" />
-                        </div>
-                      )}
+            {/* Sub-Filter Bar */}
+            <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-black/40 border border-white/10 w-fit">
+              <button
+                type="button"
+                onClick={() => setProgramsEventsFilter("all")}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  programsEventsFilter === "all"
+                    ? "bg-emerald-500 text-slate-950 shadow"
+                    : "text-slate-300 hover:text-white hover:bg-white/5"
+                }`}
+              >
+                All Initiatives ({programs.length + events.length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setProgramsEventsFilter("programs")}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                  programsEventsFilter === "programs"
+                    ? "bg-emerald-500 text-slate-950 shadow"
+                    : "text-slate-300 hover:text-white hover:bg-white/5"
+                }`}
+              >
+                <Trees className="w-3.5 h-3.5" />
+                <span>Programs ({programs.length})</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setProgramsEventsFilter("events")}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                  programsEventsFilter === "events"
+                    ? "bg-blue-500 text-white shadow"
+                    : "text-slate-300 hover:text-white hover:bg-white/5"
+                }`}
+              >
+                <Calendar className="w-3.5 h-3.5" />
+                <span>Events & Rallies ({events.length})</span>
+              </button>
+            </div>
 
-                      <div className="space-y-1 min-w-0 flex-1">
-                        <div className="flex items-center gap-2 flex-wrap text-xs">
-                          <span className="px-2.5 py-0.5 rounded-full bg-blue-950 text-blue-300 text-[10px] font-bold border border-blue-500/40">
-                            {ev.type}
-                          </span>
+            {/* Initiatives Content */}
+            <div className="space-y-6">
+              {/* SECTION: EVENTS & RALLIES */}
+              {(programsEventsFilter === "all" || programsEventsFilter === "events") && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between pb-1 border-b border-white/10">
+                    <h3 className="font-heading text-sm font-bold text-blue-300 flex items-center gap-2">
+                      <Calendar className="w-4 h-4 text-blue-400" />
+                      <span>Ground Actions & Field Rallies ({events.length})</span>
+                    </h3>
+                    <span className="text-[11px] text-slate-400">Mobilizations & community events</span>
+                  </div>
 
-                          <button
-                            type="button"
-                            onClick={() => handleTogglePublishEvent(ev)}
-                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold border cursor-pointer transition-colors ${ev.isPublished
-                              ? "bg-emerald-900/60 text-emerald-300 border-emerald-500/40 hover:bg-emerald-800"
-                              : "bg-slate-800 text-slate-400 border-slate-600 hover:bg-slate-700"
-                              }`}
-                            title="Click to toggle Published / Draft"
-                          >
-                            {ev.isPublished ? "● Published" : "○ Draft"}
-                          </button>
+                  {events.length === 0 ? (
+                    <div className="p-6 rounded-2xl bg-black/40 border border-white/10 text-center text-xs text-slate-400">
+                      No events scheduled yet. Click &ldquo;+ New Event / Rally&rdquo; above to schedule one.
+                    </div>
+                  ) : (
+                    events.map((ev) => (
+                      <div
+                        key={ev.id}
+                        className="p-4 sm:p-5 rounded-2xl bg-[#0A1B11]/80 hover:bg-[#0A1B11]/95 border border-blue-500/20 hover:border-blue-500/40 transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-md"
+                      >
+                        <div className="flex items-start sm:items-center gap-4 min-w-0 flex-1">
+                          {ev.imageUrl ? (
+                            <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden shrink-0 border border-white/10 bg-black">
+                              <Image
+                                src={ev.imageUrl}
+                                alt={ev.title}
+                                fill
+                                sizes="80px"
+                                className="object-cover"
+                                unoptimized
+                              />
+                            </div>
+                          ) : (
+                            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-blue-950/40 border border-blue-500/20 flex items-center justify-center shrink-0 text-blue-400">
+                              <Calendar className="w-6 h-6" />
+                            </div>
+                          )}
 
-                          {/* Interactive Event Lifecycle Status Switcher */}
-                          <div className="inline-flex items-center gap-1 bg-black/60 p-1 rounded-xl border border-white/10">
-                            <button
-                              type="button"
-                              onClick={() => handleUpdateEventStatus(ev, "upcoming")}
-                              className={`px-2 py-0.5 rounded-lg text-[10px] font-bold cursor-pointer transition-all ${
-                                ev.status === "upcoming"
-                                  ? "bg-blue-600 text-white shadow-sm"
-                                  : "text-slate-400 hover:text-white"
-                              }`}
-                              title="Mark as Upcoming"
-                            >
-                              Upcoming
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleUpdateEventStatus(ev, "ongoing")}
-                              className={`px-2 py-0.5 rounded-lg text-[10px] font-bold cursor-pointer transition-all ${
-                                ev.status === "ongoing"
-                                  ? "bg-amber-600 text-white shadow-sm animate-pulse"
-                                  : "text-slate-400 hover:text-white"
-                              }`}
-                              title="Mark as Ongoing"
-                            >
-                              ● Ongoing
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleUpdateEventStatus(ev, "completed")}
-                              className={`px-2 py-0.5 rounded-lg text-[10px] font-bold cursor-pointer transition-all ${
-                                ev.status === "completed" || ev.status === "past"
-                                  ? "bg-emerald-600 text-white shadow-sm"
-                                  : "text-slate-400 hover:text-white"
-                              }`}
-                              title="Mark as Finished / Completed"
-                            >
-                              ✓ Finished
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleUpdateEventStatus(ev, "cancelled")}
-                              className={`px-1.5 py-0.5 rounded-lg text-[10px] font-bold cursor-pointer transition-all ${
-                                ev.status === "cancelled"
-                                  ? "bg-red-600 text-white shadow-sm"
-                                  : "text-slate-500 hover:text-red-300"
-                              }`}
-                              title="Mark as Cancelled"
-                            >
-                              ✕
-                            </button>
+                          <div className="space-y-1.5 min-w-0 flex-1">
+                            <div className="flex items-center gap-2 flex-wrap text-xs">
+                              <span className="px-2.5 py-0.5 rounded-full bg-blue-950 text-blue-300 text-[10px] font-bold border border-blue-500/40">
+                                {ev.type}
+                              </span>
+
+                              <button
+                                type="button"
+                                onClick={() => handleTogglePublishEvent(ev)}
+                                className={`px-2 py-0.5 rounded-full text-[10px] font-bold border cursor-pointer transition-colors ${ev.isPublished
+                                  ? "bg-emerald-900/60 text-emerald-300 border-emerald-500/40 hover:bg-emerald-800"
+                                  : "bg-slate-800 text-slate-400 border-slate-600 hover:bg-slate-700"
+                                  }`}
+                                title="Click to toggle Published / Draft"
+                              >
+                                {ev.isPublished ? "● Published" : "○ Draft"}
+                              </button>
+
+                              {/* Interactive Event Lifecycle Status Switcher */}
+                              <div className="inline-flex items-center gap-1 bg-black/60 p-1 rounded-xl border border-white/10">
+                                <button
+                                  type="button"
+                                  onClick={() => handleUpdateEventStatus(ev, "upcoming")}
+                                  className={`px-2 py-0.5 rounded-lg text-[10px] font-bold cursor-pointer transition-all ${
+                                    ev.status === "upcoming"
+                                      ? "bg-blue-600 text-white shadow-sm"
+                                      : "text-slate-400 hover:text-white"
+                                  }`}
+                                  title="Mark as Upcoming"
+                                >
+                                  Upcoming
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleUpdateEventStatus(ev, "ongoing")}
+                                  className={`px-2 py-0.5 rounded-lg text-[10px] font-bold cursor-pointer transition-all ${
+                                    ev.status === "ongoing"
+                                      ? "bg-amber-600 text-white shadow-sm animate-pulse"
+                                      : "text-slate-400 hover:text-white"
+                                  }`}
+                                  title="Mark as Ongoing"
+                                >
+                                  ● Ongoing
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleUpdateEventStatus(ev, "completed")}
+                                  className={`px-2 py-0.5 rounded-lg text-[10px] font-bold cursor-pointer transition-all ${
+                                    ev.status === "completed" || ev.status === "past"
+                                      ? "bg-emerald-600 text-white shadow-sm"
+                                      : "text-slate-400 hover:text-white"
+                                  }`}
+                                  title="Mark as Finished / Completed"
+                                >
+                                  ✓ Finished
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleUpdateEventStatus(ev, "cancelled")}
+                                  className={`px-1.5 py-0.5 rounded-lg text-[10px] font-bold cursor-pointer transition-all ${
+                                    ev.status === "cancelled"
+                                      ? "bg-red-600 text-white shadow-sm"
+                                      : "text-slate-500 hover:text-red-300"
+                                  }`}
+                                  title="Mark as Cancelled"
+                                >
+                                  ✕
+                                </button>
+                              </div>
+                            </div>
+
+                            <h3 className="font-heading font-bold text-sm sm:text-base text-white truncate">
+                              {ev.title}
+                            </h3>
+
+                            <div className="flex items-center gap-4 text-xs text-slate-300 flex-wrap">
+                              <span className="text-amber-300 font-semibold flex items-center gap-1">
+                                <Calendar className="w-3.5 h-3.5" />
+                                <span>{ev.date} {ev.time ? `(${ev.time})` : ""}</span>
+                              </span>
+                              {ev.location && (
+                                <span className="text-slate-300 flex items-center gap-1">
+                                  <MapPin className="w-3.5 h-3.5 text-emerald-400" />
+                                  <span>{ev.location}</span>
+                                </span>
+                              )}
+                              {(ev.targetVolunteers ?? 0) > 0 && (
+                                <span className="text-slate-400">
+                                  Quota: <strong className="text-white">{ev.targetVolunteers}</strong> vols
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </div>
 
-                        <h3 className="font-heading font-bold text-sm sm:text-base text-white truncate">
-                          {ev.title}
-                        </h3>
-
-                        <div className="flex items-center gap-4 text-xs text-slate-300 flex-wrap">
-                          <span className="text-amber-300 font-semibold flex items-center gap-1">
-                            <Calendar className="w-3.5 h-3.5" />
-                            <span>{ev.date} ({ev.time})</span>
-                          </span>
-                          <span className="text-slate-300 flex items-center gap-1">
-                            <MapPin className="w-3.5 h-3.5 text-emerald-400" />
-                            <span>{ev.location}</span>
-                          </span>
-                          <span className="text-slate-400">
-                            Quota: <strong className="text-white">{ev.targetVolunteers}</strong> vols
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
-                      <button
-                        type="button"
-                        onClick={() => openEditModal("event", ev)}
-                        className="px-3 py-1.5 rounded-xl bg-blue-950/60 hover:bg-blue-900 border border-blue-500/40 text-blue-300 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
-                        title="Edit event"
-                      >
-                        <Pencil className="w-3.5 h-3.5 text-blue-400" />
-                        <span>Edit</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setDeleteConfirm({
-                            type: "event",
-                            id: ev.id,
-                            title: ev.title,
-                          })
-                        }
-                        className="px-3 py-1.5 rounded-xl bg-red-950/40 hover:bg-red-950 border border-red-500/30 text-red-300 text-xs font-bold flex items-center gap-1 transition-colors cursor-pointer"
-                        title="Delete event"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                        <span>Delete</span>
-                      </button>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </section>
-        )}
-
-        {/* ------------------------------------------------------------- */}
-        {/* TAB 3: PROGRAMS (NEW TAB) */}
-        {/* ------------------------------------------------------------- */}
-        {activeTab === "programs" && (
-          <section className="space-y-4 animate-in fade-in duration-300">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="font-heading text-lg sm:text-xl font-bold text-white">
-                  Conservation Programs
-                </h2>
-                <p className="text-xs text-slate-300">
-                  Long-term environmental programs, reforestation projects, and indigenous community initiatives.
-                </p>
-              </div>
-              <Button
-                onClick={() => openCreateModal("program")}
-                size="sm"
-                className="bg-[#22C55E] hover:bg-[#16A34A] text-slate-950 font-bold text-xs rounded-xl"
-              >
-                <Plus className="w-3.5 h-3.5 mr-1" />
-                <span>New Program</span>
-              </Button>
-            </div>
-
-            <div className="space-y-3">
-              {programs.length === 0 ? (
-                <div className="p-8 rounded-2xl bg-black/40 border border-white/10 text-center text-xs text-slate-400">
-                  No programs added yet. Click &ldquo;New Program&rdquo; to create one.
-                </div>
-              ) : (
-                programs.map((prog) => (
-                  <div
-                    key={prog.id}
-                    className="p-4 sm:p-5 rounded-2xl bg-[#0A1B11]/80 hover:bg-[#0A1B11]/95 border border-emerald-500/20 hover:border-emerald-500/40 transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-md"
-                  >
-                    <div className="flex items-start sm:items-center gap-4 min-w-0 flex-1">
-                      {prog.coverImage ? (
-                        <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden shrink-0 border border-white/10 bg-black">
-                          <Image
-                            src={prog.coverImage}
-                            alt={prog.title}
-                            fill
-                            sizes="80px"
-                            className="object-cover"
-                            unoptimized
-                          />
-                        </div>
-                      ) : (
-                        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-emerald-950/40 border border-emerald-500/20 flex items-center justify-center shrink-0 text-emerald-400">
-                          <Trees className="w-6 h-6" />
-                        </div>
-                      )}
-
-                      <div className="space-y-1 min-w-0 flex-1">
-                        <div className="flex items-center gap-2 flex-wrap text-xs">
-                          <span className="px-2.5 py-0.5 rounded-full bg-emerald-950 text-emerald-300 text-[10px] font-bold border border-emerald-500/30">
-                            {prog.category}
-                          </span>
-
+                        <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
                           <button
                             type="button"
-                            onClick={() => handleTogglePublishProgram(prog)}
-                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold border cursor-pointer transition-colors ${prog.isPublished
-                              ? "bg-emerald-900/60 text-emerald-300 border-emerald-500/40 hover:bg-emerald-800"
-                              : "bg-slate-800 text-slate-400 border-slate-600 hover:bg-slate-700"
-                              }`}
-                            title="Click to toggle Published / Draft"
+                            onClick={() => openEditModal("event", ev)}
+                            className="px-3 py-1.5 rounded-xl bg-blue-950/60 hover:bg-blue-900 border border-blue-500/40 text-blue-300 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
+                            title="Edit event"
                           >
-                            {prog.isPublished ? "● Published" : "○ Draft"}
+                            <Pencil className="w-3.5 h-3.5 text-blue-400" />
+                            <span>Edit</span>
                           </button>
-
-                          <span className="text-[10px] uppercase font-bold text-amber-300">
-                            Status: {prog.status}
-                          </span>
-                        </div>
-
-                        <h3 className="font-heading font-bold text-sm sm:text-base text-white truncate">
-                          {prog.title}
-                        </h3>
-
-                        <p className="text-xs text-slate-300 line-clamp-1 leading-relaxed">
-                          {prog.description}
-                        </p>
-
-                        <div className="text-[11px] text-slate-400 flex items-center gap-3">
-                          {prog.location && <span>Location: {prog.location}</span>}
-                          {prog.beneficiaries && <span>&bull; Partners: {prog.beneficiaries}</span>}
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setDeleteConfirm({
+                                type: "event",
+                                id: ev.id,
+                                title: ev.title,
+                              })
+                            }
+                            className="px-3 py-1.5 rounded-xl bg-red-950/40 hover:bg-red-950 border border-red-500/30 text-red-300 text-xs font-bold flex items-center gap-1 transition-colors cursor-pointer"
+                            title="Delete event"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                            <span>Delete</span>
+                          </button>
                         </div>
                       </div>
-                    </div>
+                    ))
+                  )}
+                </div>
+              )}
 
-                    <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
-                      <button
-                        type="button"
-                        onClick={() => openEditModal("program", prog)}
-                        className="px-3 py-1.5 rounded-xl bg-emerald-950/60 hover:bg-emerald-900 border border-emerald-500/40 text-emerald-300 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
-                        title="Edit program"
-                      >
-                        <Pencil className="w-3.5 h-3.5 text-emerald-400" />
-                        <span>Edit</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setDeleteConfirm({
-                            type: "program",
-                            id: prog.id,
-                            title: prog.title,
-                          })
-                        }
-                        className="px-3 py-1.5 rounded-xl bg-red-950/40 hover:bg-red-950 border border-red-500/30 text-red-300 text-xs font-bold flex items-center gap-1 transition-colors cursor-pointer"
-                        title="Delete program"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                        <span>Delete</span>
-                      </button>
-                    </div>
+              {/* SECTION: CONSERVATION PROGRAMS */}
+              {(programsEventsFilter === "all" || programsEventsFilter === "programs") && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between pb-1 border-b border-white/10">
+                    <h3 className="font-heading text-sm font-bold text-emerald-300 flex items-center gap-2">
+                      <Trees className="w-4 h-4 text-emerald-400" />
+                      <span>Long-Term Conservation Programs ({programs.length})</span>
+                    </h3>
+                    <span className="text-[11px] text-slate-400">Strategic initiatives & reforestation</span>
                   </div>
-                ))
+
+                  {programs.length === 0 ? (
+                    <div className="p-6 rounded-2xl bg-black/40 border border-white/10 text-center text-xs text-slate-400">
+                      No programs added yet. Click &ldquo;+ New Program&rdquo; above to create one.
+                    </div>
+                  ) : (
+                    programs.map((prog) => (
+                      <div
+                        key={prog.id}
+                        className="p-4 sm:p-5 rounded-2xl bg-[#0A1B11]/80 hover:bg-[#0A1B11]/95 border border-emerald-500/20 hover:border-emerald-500/40 transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-md"
+                      >
+                        <div className="flex items-start sm:items-center gap-4 min-w-0 flex-1">
+                          {prog.coverImage ? (
+                            <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden shrink-0 border border-white/10 bg-black">
+                              <Image
+                                src={prog.coverImage}
+                                alt={prog.title}
+                                fill
+                                sizes="80px"
+                                className="object-cover"
+                                unoptimized
+                              />
+                            </div>
+                          ) : (
+                            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-emerald-950/40 border border-emerald-500/20 flex items-center justify-center shrink-0 text-emerald-400">
+                              <Trees className="w-6 h-6" />
+                            </div>
+                          )}
+
+                          <div className="space-y-1.5 min-w-0 flex-1">
+                            <div className="flex items-center gap-2 flex-wrap text-xs">
+                              <span className="px-2.5 py-0.5 rounded-full bg-emerald-950 text-emerald-300 text-[10px] font-bold border border-emerald-500/30">
+                                {prog.category}
+                              </span>
+
+                              <button
+                                type="button"
+                                onClick={() => handleTogglePublishProgram(prog)}
+                                className={`px-2 py-0.5 rounded-full text-[10px] font-bold border cursor-pointer transition-colors ${prog.isPublished
+                                  ? "bg-emerald-900/60 text-emerald-300 border-emerald-500/40 hover:bg-emerald-800"
+                                  : "bg-slate-800 text-slate-400 border-slate-600 hover:bg-slate-700"
+                                  }`}
+                                title="Click to toggle Published / Draft"
+                              >
+                                {prog.isPublished ? "● Published" : "○ Draft"}
+                              </button>
+
+                              {/* Interactive Program Lifecycle Status Switcher */}
+                              <div className="inline-flex items-center gap-1 bg-black/60 p-1 rounded-xl border border-white/10">
+                                <button
+                                  type="button"
+                                  onClick={() => handleUpdateProgramStatus(prog, "upcoming")}
+                                  className={`px-2 py-0.5 rounded-lg text-[10px] font-bold cursor-pointer transition-all ${
+                                    prog.status === "upcoming"
+                                      ? "bg-blue-600 text-white shadow-sm"
+                                      : "text-slate-400 hover:text-white"
+                                  }`}
+                                  title="Mark as Upcoming"
+                                >
+                                  Upcoming
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleUpdateProgramStatus(prog, "ongoing")}
+                                  className={`px-2 py-0.5 rounded-lg text-[10px] font-bold cursor-pointer transition-all ${
+                                    prog.status === "ongoing"
+                                      ? "bg-emerald-600 text-white shadow-sm animate-pulse"
+                                      : "text-slate-400 hover:text-white"
+                                  }`}
+                                  title="Mark as Ongoing"
+                                >
+                                  ● Ongoing
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleUpdateProgramStatus(prog, "completed")}
+                                  className={`px-2 py-0.5 rounded-lg text-[10px] font-bold cursor-pointer transition-all ${
+                                    prog.status === "completed"
+                                      ? "bg-slate-700 text-white shadow-sm"
+                                      : "text-slate-400 hover:text-white"
+                                  }`}
+                                  title="Mark as Completed"
+                                >
+                                  ✓ Completed
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleUpdateProgramStatus(prog, "cancelled")}
+                                  className={`px-1.5 py-0.5 rounded-lg text-[10px] font-bold cursor-pointer transition-all ${
+                                    prog.status === "cancelled"
+                                      ? "bg-red-600 text-white shadow-sm"
+                                      : "text-slate-500 hover:text-red-300"
+                                  }`}
+                                  title="Mark as Cancelled"
+                                >
+                                  ✕
+                                </button>
+                              </div>
+                            </div>
+
+                            <h3 className="font-heading font-bold text-sm sm:text-base text-white truncate">
+                              {prog.title}
+                            </h3>
+
+                            {prog.description && (
+                              <p className="text-xs text-slate-300 line-clamp-1 leading-relaxed">
+                                {prog.description}
+                              </p>
+                            )}
+
+                            <div className="text-[11px] text-slate-400 flex items-center gap-3">
+                              {prog.location && <span>Location: {prog.location}</span>}
+                              {prog.beneficiaries && <span>&bull; Partners: {prog.beneficiaries}</span>}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                          <button
+                            type="button"
+                            onClick={() => openEditModal("program", prog)}
+                            className="px-3 py-1.5 rounded-xl bg-emerald-950/60 hover:bg-emerald-900 border border-emerald-500/40 text-emerald-300 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
+                            title="Edit program"
+                          >
+                            <Pencil className="w-3.5 h-3.5 text-emerald-400" />
+                            <span>Edit</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setDeleteConfirm({
+                                type: "program",
+                                id: prog.id,
+                                title: prog.title,
+                              })
+                            }
+                            className="px-3 py-1.5 rounded-xl bg-red-950/40 hover:bg-red-950 border border-red-500/30 text-red-300 text-xs font-bold flex items-center gap-1 transition-colors cursor-pointer"
+                            title="Delete program"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                            <span>Delete</span>
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
               )}
             </div>
           </section>

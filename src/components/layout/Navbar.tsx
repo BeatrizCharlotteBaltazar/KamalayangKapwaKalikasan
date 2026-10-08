@@ -23,9 +23,8 @@ import { ECO_AVATAR_PRESETS } from "@/lib/auth";
 const navItems = [
   { href: "/", label: "HOME" },
   { href: "/about", label: "ABOUT" },
-  { href: "/programs", label: "PROGRAMS" },
+  { href: "/programs", label: "PROGRAMS & EVENTS" },
   { href: "/resources", label: "RESOURCES" },
-  { href: "/news-events", label: "EVENTS" },
   { href: "/gallery", label: "GALLERY" },
   { href: "/contact", label: "CONTACT US" },
 ];
@@ -118,7 +117,12 @@ export function Navbar() {
               style={{ fontFamily: 'var(--font-the-seasons), "The Seasons", Georgia, serif' }}
             >
               {navItems.map((item) => {
-                const isActive = pathname === item.href;
+                const isActive =
+                  item.href === "/"
+                    ? pathname === "/"
+                    : item.href === "/programs"
+                    ? pathname === "/programs" || pathname.startsWith("/programs/") || pathname === "/news-events" || pathname.startsWith("/news-events/")
+                    : pathname === item.href || pathname.startsWith(`${item.href}/`);
                 return (
                   <Link
                     key={item.href}
@@ -444,18 +448,26 @@ export function Navbar() {
                 </Link>
               </div>
 
-              {navItems.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`py-2 px-3 rounded-xl uppercase transition-colors ${pathname === item.href
-                    ? "text-[#e1ffdd] bg-white/10 font-bold"
-                    : "text-[#F0E6D2]/90 hover:text-white"
-                    }`}
-                >
-                  {item.label}
-                </Link>
-              ))}
+              {navItems.map((item) => {
+                const isActive =
+                  item.href === "/"
+                    ? pathname === "/"
+                    : item.href === "/programs"
+                    ? pathname === "/programs" || pathname.startsWith("/programs/") || pathname === "/news-events" || pathname.startsWith("/news-events/")
+                    : pathname === item.href || pathname.startsWith(`${item.href}/`);
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`py-2 px-3 rounded-xl uppercase transition-colors ${isActive
+                      ? "text-[#e1ffdd] bg-white/10 font-bold"
+                      : "text-[#F0E6D2]/90 hover:text-white"
+                      }`}
+                  >
+                    {item.label}
+                  </Link>
+                );
+              })}
 
               {/* Mobile Portals Direct Links */}
               {isAuthenticated && (

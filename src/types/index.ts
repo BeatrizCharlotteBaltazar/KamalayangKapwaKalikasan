@@ -52,6 +52,7 @@ export interface NewsEvent {
   cover_image: string;
   organizer?: string;
   is_featured?: boolean;
+  status?: string;
 }
 
 export type GalleryMediaType = "image" | "video";

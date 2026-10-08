@@ -103,10 +103,10 @@ export function LatestNews() {
           <div>
             <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#EF4444] mb-2">
               <Flame className="w-4 h-4 text-[#EF4444]" />
-              <span>Dispatches & Mobilizations</span>
+              <span>Kaganapan &amp; Mga Rally para sa Kalikasan</span>
             </div>
             <h2 className="text-3xl sm:text-4xl font-black font-heading tracking-tight text-white uppercase">
-              Field Dispatches & <span className="text-[#DC2626]">Upcoming Rallies</span>
+              Field Dispatches &amp; <span className="text-[#DC2626]">Upcoming Rallies</span>
             </h2>
           </div>
 
@@ -121,7 +121,7 @@ export function LatestNews() {
           </div>
         </div>
 
-        {/* Section Sub-Tabs: Field Dispatches vs Upcoming Rallies */}
+        {/* Section Sub-Tabs: Field Dispatches vs Field Actions & Rallies */}
         <div className="flex items-center gap-2 mb-8">
           <button
             type="button"
@@ -146,11 +146,11 @@ export function LatestNews() {
             }`}
           >
             <Calendar className="w-4 h-4" />
-            <span>Upcoming Rallies ({rallies.length})</span>
+            <span>Field Actions &amp; Rallies ({rallies.length})</span>
           </button>
         </div>
 
-        {/* TAB 1: FIELD DISPATCHES (Announcements: status='published' AND show_on_main=true, limit 3) */}
+        {/* TAB 1: FIELD DISPATCHES */}
         {activeTab === "dispatches" && (
           <div className="divide-y divide-white/10 space-y-2 animate-in fade-in duration-200">
             {dispatches.length === 0 ? (
@@ -184,7 +184,7 @@ export function LatestNews() {
                             <Megaphone className="w-8 h-8" />
                           </div>
                         )}
-                        <span className="absolute top-2.5 left-2.5 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-[#2563EB] text-white">
+                        <span className="absolute top-2.5 left-2.5 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-[#2563EB] text-white shadow-sm">
                           {item.category || "Field Report"}
                         </span>
                       </div>
@@ -247,85 +247,125 @@ export function LatestNews() {
           </div>
         )}
 
-        {/* TAB 2: UPCOMING RALLIES (Events: status<>'draft' AND event_date>=now(), limit 3) */}
+        {/* TAB 2: FIELD ACTIONS & RALLIES (Real-time Ongoing vs Upcoming vs Completed Status) */}
         {activeTab === "rallies" && (
           <div className="divide-y divide-white/10 space-y-2 animate-in fade-in duration-200">
             {rallies.length === 0 ? (
               <div className="py-14 text-center rounded-3xl bg-black/40 border border-white/10 space-y-2">
                 <Calendar className="w-8 h-8 text-slate-500 mx-auto" />
-                <p className="text-sm font-bold text-white">No upcoming rallies scheduled at this time.</p>
-                <p className="text-xs text-slate-400">Stay tuned for future environmental mobilizations and assemblies!</p>
+                <p className="text-sm font-bold text-white">No environmental rallies or actions scheduled at this time.</p>
+                <p className="text-xs text-slate-400">Stay tuned for future environmental mobilizations and community assemblies!</p>
               </div>
             ) : (
-              rallies.map((item) => (
-                <article
-                  key={item.id}
-                  className="pt-6 pb-6 first:pt-0 group hover:bg-white/[0.02] p-4 rounded-2xl transition-all"
-                >
-                  <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
-                    
-                    {/* Visual Preview */}
-                    <div className="md:col-span-3">
-                      <div className="relative aspect-[16/10] rounded-2xl overflow-hidden border border-white/10 bg-black/60">
-                        {item.image_url ? (
-                          <Image
-                            src={item.image_url}
-                            alt={item.title}
-                            fill
-                            sizes="(max-width: 768px) 100vw, 25vw"
-                            className="object-cover group-hover:scale-105 transition-transform duration-500"
-                            unoptimized
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center bg-red-950/60 text-red-400">
-                            <Calendar className="w-8 h-8" />
-                          </div>
-                        )}
-                        <span className="absolute top-2.5 left-2.5 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-[#DC2626] text-white">
-                          Mobilization
-                        </span>
-                      </div>
-                    </div>
+              rallies.map((item) => {
+                const isOngoing = item.status === "ongoing";
+                const isCompleted = item.status === "completed" || item.status === "past";
 
-                    {/* Narrative details */}
-                    <div className="md:col-span-7 space-y-2">
-                      <div className="flex items-center gap-3 text-xs text-slate-400">
-                        <span className="flex items-center gap-1 text-slate-300 font-semibold">
-                          <Calendar className="w-3.5 h-3.5 text-emerald-400" />
-                          {formatDate(item.event_date)}
-                        </span>
-                        <span>•</span>
-                        <span className="flex items-center gap-1 text-slate-300">
-                          <MapPin className="w-3.5 h-3.5 text-amber-400" />
-                          {item.location}
-                        </span>
+                return (
+                  <article
+                    key={item.id}
+                    className="pt-6 pb-6 first:pt-0 group hover:bg-white/[0.02] p-4 rounded-2xl transition-all"
+                  >
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+                      
+                      {/* Visual Preview */}
+                      <div className="md:col-span-3">
+                        <div className="relative aspect-[16/10] rounded-2xl overflow-hidden border border-white/10 bg-black/60">
+                          {item.image_url ? (
+                            <Image
+                              src={item.image_url}
+                              alt={item.title}
+                              fill
+                              sizes="(max-width: 768px) 100vw, 25vw"
+                              className="object-cover group-hover:scale-105 transition-transform duration-500"
+                              unoptimized
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-red-950/60 text-red-400">
+                              <Calendar className="w-8 h-8" />
+                            </div>
+                          )}
+                          <span className={`absolute top-2.5 left-2.5 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider shadow-md ${
+                            isOngoing
+                              ? "bg-emerald-500 text-slate-950 animate-pulse font-black"
+                              : isCompleted
+                              ? "bg-slate-700 text-slate-200"
+                              : "bg-[#DC2626] text-white"
+                          }`}>
+                            {isOngoing ? "● ONGOING" : isCompleted ? "✓ COMPLETED" : "UPCOMING"}
+                          </span>
+                        </div>
                       </div>
 
-                      <h3 className="font-heading font-extrabold text-lg sm:text-xl text-white group-hover:text-red-400 transition-colors leading-snug">
-                        <Link href="/get-involved">
-                          {item.title}
+                      {/* Narrative details */}
+                      <div className="md:col-span-7 space-y-2">
+                        <div className="flex items-center gap-2.5 text-xs text-slate-400 flex-wrap">
+                          {isOngoing && (
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-black bg-emerald-950 text-emerald-300 border border-emerald-500/40 animate-pulse">
+                              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                              <span>Ongoing Rally / Kasalukuyang Nagaganap</span>
+                            </span>
+                          )}
+                          {isCompleted && (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-800 text-slate-300 border border-slate-600">
+                              <span>Completed / Tapos Na</span>
+                            </span>
+                          )}
+                          {!isOngoing && !isCompleted && (
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-950 text-amber-300 border border-amber-500/40">
+                              <span className="w-2 h-2 rounded-full bg-amber-400" />
+                              <span>Upcoming Mobilization / Paparating</span>
+                            </span>
+                          )}
+
+                          <span className="flex items-center gap-1 text-slate-300 font-semibold">
+                            <Calendar className="w-3.5 h-3.5 text-emerald-400" />
+                            {formatDate(item.event_date)}
+                          </span>
+
+                          {item.location && (
+                            <>
+                              <span>•</span>
+                              <span className="flex items-center gap-1 text-slate-300">
+                                <MapPin className="w-3.5 h-3.5 text-amber-400" />
+                                {item.location}
+                              </span>
+                            </>
+                          )}
+                        </div>
+
+                        <h3 className="font-heading font-extrabold text-lg sm:text-xl text-white group-hover:text-red-400 transition-colors leading-snug">
+                          <Link href={`/news-events/${item.id}`}>
+                            {item.title}
+                          </Link>
+                        </h3>
+
+                        <p className="text-xs sm:text-sm text-slate-300 line-clamp-2 leading-relaxed">
+                          {item.description}
+                        </p>
+                      </div>
+
+                      {/* Quick Action */}
+                      <div className="md:col-span-2 flex md:justify-end">
+                        <Link
+                          href={isCompleted ? `/news-events/${item.id}` : "/get-involved"}
+                          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all inline-flex items-center gap-1.5 shadow-md cursor-pointer ${
+                            isOngoing
+                              ? "bg-[#22C55E] hover:bg-[#16A34A] text-slate-950 font-black animate-pulse"
+                              : isCompleted
+                              ? "bg-slate-700 hover:bg-slate-600 text-white"
+                              : "bg-[#DC2626] hover:bg-[#B91C1C] text-white"
+                          }`}
+                        >
+                          <span>{isOngoing ? "Join Ongoing" : isCompleted ? "View Recap" : "Register"}</span>
+                          <ArrowRight className="w-3.5 h-3.5" />
                         </Link>
-                      </h3>
+                      </div>
 
-                      <p className="text-xs sm:text-sm text-slate-300 line-clamp-2 leading-relaxed">
-                        {item.description}
-                      </p>
                     </div>
-
-                    {/* Quick Action */}
-                    <div className="md:col-span-2 flex md:justify-end">
-                      <Link
-                        href="/get-involved"
-                        className="px-4 py-2 rounded-xl text-xs font-bold transition-all inline-flex items-center gap-1.5 bg-[#DC2626] hover:bg-[#B91C1C] text-white shadow-md cursor-pointer"
-                      >
-                        <span>Register</span>
-                        <ArrowRight className="w-3.5 h-3.5" />
-                      </Link>
-                    </div>
-
-                  </div>
-                </article>
-              ))
+                  </article>
+                );
+              })
             )}
           </div>
         )}
