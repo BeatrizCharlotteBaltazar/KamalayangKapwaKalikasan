@@ -91,8 +91,9 @@ export default function RegisterPage() {
         );
         setIsLoading(false);
       }
-    } catch (err: any) {
-      setError(err?.message || "Failed to create account. Please check your connection and try again.");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to create account. Please check your connection and try again.";
+      setError(msg);
       setIsLoading(false);
     }
   };

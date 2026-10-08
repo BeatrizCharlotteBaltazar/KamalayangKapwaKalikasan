@@ -27,6 +27,24 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const { supabase } = await import("@/lib/supabase/client");
+    const { error: dbError } = await supabase.from("contact_messages").insert([{
+      name: validated.data.name,
+      email: validated.data.email,
+      subject: validated.data.subject,
+      message: validated.data.message,
+      status: "unread",
+    }]);
+
+    if (dbError) {
+      console.error("Supabase contact_messages insert error:", {
+        message: dbError.message,
+        code: dbError.code,
+        details: dbError.details,
+        hint: dbError.hint,
+      });
+    }
+
     return NextResponse.json({
       success: true,
       message: "Matagumpay na naipadala ang mensahe!",

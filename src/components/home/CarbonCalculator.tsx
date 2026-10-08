@@ -19,11 +19,11 @@ import {
 import { Button } from "@/components/ui/button";
 
 export function CarbonCalculator() {
-  // User Inputs
-  const [electricBill, setElectricBill] = useState<number>(3000); // PHP per month
+  // User Inputs (Balanced Filipino Baseline by default)
+  const [electricBill, setElectricBill] = useState<number>(1600); // PHP per month (~133 kWh)
   const [commuteMode, setCommuteMode] = useState<"jeepney" | "motorcycle" | "car" | "train" | "walk">("jeepney");
-  const [commuteDistance, setCommuteDistance] = useState<number>(20); // km roundtrip daily
-  const [domesticFlights, setDomesticFlights] = useState<number>(2); // roundtrips per year
+  const [commuteDistance, setCommuteDistance] = useState<number>(12); // km roundtrip daily
+  const [domesticFlights, setDomesticFlights] = useState<number>(0); // roundtrips per year
   const [dietType, setDietType] = useState<"meat" | "balanced" | "plant">("balanced");
 
   // Emission Calculations (Metric Tons of CO2e per year)
@@ -60,6 +60,12 @@ export function CarbonCalculator() {
   const treesNeeded = Math.max(1, Math.ceil(totalCo2 / 0.022));
 
   const phAverage = 1.40; // Philippines national per capita average (t CO2e)
+
+  const footprintTier = totalCo2 <= 1.8
+    ? { label: "Low Impact (Mababa)", color: "bg-emerald-500/20 text-emerald-300 border-emerald-500/40" }
+    : totalCo2 <= 3.2
+    ? { label: "Balanced Footprint (Katamtaman)", color: "bg-emerald-500/20 text-emerald-300 border-emerald-500/40" }
+    : { label: "High Impact (Mataas)", color: "bg-amber-500/20 text-amber-300 border-amber-500/40" };
 
   return (
     <section id="carbon-calculator" className="relative py-16 md:py-24 text-white scroll-mt-20">
@@ -147,7 +153,7 @@ export function CarbonCalculator() {
                   <button
                     key={mode.id}
                     type="button"
-                    onClick={() => setCommuteMode(mode.id as any)}
+                    onClick={() => setCommuteMode(mode.id as "jeepney" | "motorcycle" | "car" | "train" | "walk")}
                     className={`py-2 px-1.5 rounded-xl text-xs font-bold transition-all text-center cursor-pointer ${
                       commuteMode === mode.id
                         ? "bg-[#2563EB] text-white shadow-md scale-102"
@@ -223,7 +229,7 @@ export function CarbonCalculator() {
                   <button
                     key={diet.id}
                     type="button"
-                    onClick={() => setDietType(diet.id as any)}
+                    onClick={() => setDietType(diet.id as "meat" | "balanced" | "plant")}
                     className={`py-2 px-2 rounded-xl text-left transition-all cursor-pointer ${
                       dietType === diet.id
                         ? "bg-[#22C55E] text-slate-950 font-black shadow-md scale-102"
@@ -243,9 +249,14 @@ export function CarbonCalculator() {
           <div className="lg:col-span-5 bg-gradient-to-b from-[#0E2919] to-[#07170E] rounded-3xl p-6 sm:p-8 border-2 border-emerald-500/30 shadow-2xl space-y-6 text-white">
             
             <div>
-              <span className="text-xs font-bold uppercase tracking-widest text-[#F59E0B]">
-                Your Estimated Annual Footprint
-              </span>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className="text-xs font-bold uppercase tracking-widest text-[#F59E0B]">
+                  Your Estimated Annual Footprint
+                </span>
+                <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${footprintTier.color}`}>
+                  {footprintTier.label}
+                </span>
+              </div>
               
               <div className="mt-2 flex items-baseline gap-2">
                 <span className="text-5xl sm:text-6xl font-black text-white tracking-tight">
@@ -301,9 +312,57 @@ export function CarbonCalculator() {
               </Link>
             </div>
 
-            <div className="text-[11px] text-slate-400 flex items-center gap-1.5 pt-1">
-              <CheckCircle className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-              <span>Grounded in Philippine Department of Energy & IPCC factors</span>
+            {/* Scientific Calculation Basis Card Footnote */}
+            <div className="pt-4 border-t border-emerald-500/25 space-y-3">
+              <div className="flex items-center gap-2 text-xs font-bold text-[#F59E0B] uppercase tracking-wide">
+                <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
+                <span>Basis of the Calculator: Based on</span>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-black/50 border border-emerald-500/20 text-[11px] text-slate-300 space-y-2.5 leading-relaxed">
+                <p className="text-slate-200 font-semibold border-b border-white/10 pb-1.5">
+                  This carbon footprint estimation and tree offset requirement is calculated based on established Philippine national conversion standards and IPCC methodologies:
+                </p>
+
+                <ul className="space-y-2 text-slate-300">
+                  <li className="flex items-start gap-2">
+                    <span className="text-emerald-400 font-bold shrink-0">&bull;</span>
+                    <div>
+                      <strong className="text-white">Household Electricity:</strong> Based on the Philippine Department of Energy (DOE) Luzon-Visayas Grid Emission Factor (~0.712 kg CO₂e / kWh) with an assumed residential electricity rate of ₱12.00/kWh.
+                    </div>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-emerald-400 font-bold shrink-0">&bull;</span>
+                    <div>
+                      <strong className="text-white">Daily Commuting:</strong> Based on Department of Transportation (DOTr) and IPCC transport emission factors (Jeepney/Bus: 0.05 kg CO₂e/km, Motorcycle: 0.09 kg CO₂e/km, Private Car: 0.19 kg CO₂e/km, Train: 0.03 kg CO₂e/km, calculated across 260 work days/year).
+                    </div>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-emerald-400 font-bold shrink-0">&bull;</span>
+                    <div>
+                      <strong className="text-white">Domestic Air Travel:</strong> Based on Civil Aviation Authority of the Philippines (CAAP) & ICAO per-passenger roundtrip index (~240 kg CO₂e per domestic roundtrip flight).
+                    </div>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-emerald-400 font-bold shrink-0">&bull;</span>
+                    <div>
+                      <strong className="text-white">Diet & Consumption Profile:</strong> Based on UN Food and Agriculture Organization (FAO) Southeast Asia food systems benchmark (Meat-heavy: 1.8 t CO₂e/yr, Balanced: 1.2 t CO₂e/yr, Plant-rich: 0.6 t CO₂e/yr).
+                    </div>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-emerald-400 font-bold shrink-0">&bull;</span>
+                    <div>
+                      <strong className="text-white">Tree Carbon Absorption:</strong> Based on DENR Forest Management Bureau (FMB) & UPLB College of Forestry empirical research (1 mature native Philippine dipterocarp or hardwood such as Narra/Dao absorbs approximately 22 kg CO₂e per year).
+                    </div>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-emerald-400 font-bold shrink-0">&bull;</span>
+                    <div>
+                      <strong className="text-white">National Benchmark:</strong> Compared against the Climate Change Commission (CCC) Philippines national average benchmark of 1.40 metric tons CO₂e per person annually.
+                    </div>
+                  </li>
+                </ul>
+              </div>
             </div>
 
           </div>

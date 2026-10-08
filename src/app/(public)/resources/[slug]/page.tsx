@@ -1,3 +1,5 @@
+export const instant = false;
+
 import React from "react";
 import { notFound } from "next/navigation";
 import Image from "next/image";
@@ -12,7 +14,7 @@ import {
   Leaf, 
   Sparkles 
 } from "lucide-react";
-import { resourcesData } from "@/lib/data";
+import { fetchPublicResourceBySlugOrId, fetchRelatedResources } from "@/lib/supabase/publicStore";
 import { formatDate } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -21,34 +23,52 @@ interface Props {
   params: Promise<{ slug: string }>;
 }
 
-export async function generateStaticParams() {
-  return resourcesData.map((resource) => ({
-    slug: resource.slug,
-  }));
-}
-
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { slug } = await params;
-  const resource = resourcesData.find((r) => r.slug === slug);
-  if (!resource) return { title: "Artikulo Hindi Natagpuan" };
+  try {
+    const { slug } = await params;
+    if (!slug) return { title: "Gabay at Edukasyon | Kamalayang Kapwa Kalikasan" };
+    const resource = await fetchPublicResourceBySlugOrId(slug);
+    if (!resource) return { title: "Artikulo Hindi Natagpuan | Kamalayang Kapwa Kalikasan" };
 
-  return {
-    title: `${resource.title} | Kamalayang Kapwa Kalikasan`,
-    description: resource.summary,
-  };
+    return {
+      title: `${resource.title} | Kamalayang Kapwa Kalikasan`,
+      description: resource.summary,
+    };
+  } catch {
+    return { title: "Gabay at Edukasyon | Kamalayang Kapwa Kalikasan" };
+  }
 }
 
 export default async function ResourceDetailPage({ params }: Props) {
-  const { slug } = await params;
-  const resource = resourcesData.find((r) => r.slug === slug);
+  let slug = "";
+  try {
+    const resolved = await params;
+    slug = resolved?.slug || "";
+  } catch {
+    notFound();
+  }
+
+  if (!slug) {
+    notFound();
+  }
+
+  let resource = null;
+  try {
+    resource = await fetchPublicResourceBySlugOrId(slug);
+  } catch {
+    notFound();
+  }
 
   if (!resource) {
     notFound();
   }
 
-  const related = resourcesData
-    .filter((r) => r.slug !== slug && r.category === resource.category)
-    .slice(0, 2);
+  let related: any[] = [];
+  try {
+    related = await fetchRelatedResources(resource.category, resource.id);
+  } catch {
+    related = [];
+  }
 
   return (
     <article className="py-12 md:py-16">

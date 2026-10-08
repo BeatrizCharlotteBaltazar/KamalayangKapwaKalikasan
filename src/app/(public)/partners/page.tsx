@@ -1,4 +1,6 @@
-import React from "react";
+"use client";
+
+import React, { useState, useEffect } from "react";
 import { Metadata } from "next";
 import Link from "next/link";
 import { 
@@ -11,16 +13,10 @@ import {
   Store,
   Sparkles 
 } from "lucide-react";
-import { partnersData } from "@/lib/data";
-import { PartnerType } from "@/types";
+import { fetchPublicPartners } from "@/lib/supabase/publicStore";
+import { Partner, PartnerType } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-
-export const metadata: Metadata = {
-  title: "Stakeholders & Partners | Kamalayang Kapwa Kalikasan",
-  description:
-    "Collaborative environmental alliances with NGOs, schools, government agencies, and green enterprises.",
-};
 
 const partnerCategories: { 
   type: PartnerType; 
@@ -55,6 +51,31 @@ const partnerCategories: {
 ];
 
 export default function PartnersPage() {
+  const [partners, setPartners] = useState<Partner[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const loadData = () => {
+    fetchPublicPartners().then((live) => {
+      setPartners(live || []);
+      setIsLoading(false);
+    });
+  };
+
+  useEffect(() => {
+    loadData();
+
+    const handleUpdate = () => {
+      loadData();
+    };
+
+    window.addEventListener("kkk_content_updated", handleUpdate);
+    window.addEventListener("storage", handleUpdate);
+    return () => {
+      window.removeEventListener("kkk_content_updated", handleUpdate);
+      window.removeEventListener("storage", handleUpdate);
+    };
+  }, []);
+
   return (
     <div className="py-10 md:py-16 relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
@@ -78,9 +99,27 @@ export default function PartnersPage() {
         </div>
 
         {/* Grouped Partners Sections */}
-        <div className="space-y-16">
+        {partners.length === 0 ? (
+          <div className="text-center py-16 bg-white/95 rounded-3xl border border-slate-200 p-8 space-y-3 shadow-xs">
+            <Handshake className="w-12 h-12 text-[#0C3B7C] mx-auto opacity-60" />
+            <h3 className="font-heading text-lg font-bold text-[#19241A]">
+              Wala pang nakatalang opisyal na partner sa talaan
+            </h3>
+            <p className="text-xs text-[#536054] max-w-md mx-auto">
+              Bukas ang Kamalayang Kapwa Kalikasan para sa pakikipagtulungan sa mga NGO, paaralan, LGU, at mga makakalikasang negosyo.
+            </p>
+            <div className="pt-2">
+              <Link href="/contact">
+                <Button size="sm" className="bg-[#2E5E34] text-white font-bold text-xs">
+                  Makipag-ugnayan Para sa Alliances &rarr;
+                </Button>
+              </Link>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-16">
           {partnerCategories.map((cat) => {
-            const partnersInGroup = partnersData.filter((p) => p.type === cat.type);
+            const partnersInGroup = partners.filter((p) => p.type === cat.type);
 
             return (
               <section key={cat.type} className="space-y-6">
@@ -153,6 +192,7 @@ export default function PartnersPage() {
             );
           })}
         </div>
+        )}
 
         {/* Partnership Proposal CTA */}
         <div className="p-8 sm:p-10 rounded-3xl bg-gradient-to-r from-emerald-950 via-[#19241A] to-blue-950 text-white text-center space-y-4 shadow-xl">

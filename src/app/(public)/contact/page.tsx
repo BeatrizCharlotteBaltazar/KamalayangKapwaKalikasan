@@ -14,11 +14,12 @@ import {
   AlertCircle,
   Building2
 } from "lucide-react";
-import { siteSettings } from "@/lib/data";
+import { useSiteSettings } from "@/lib/siteSettings";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 export default function ContactPage() {
+  const siteSettings = useSiteSettings();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -62,7 +63,7 @@ export default function ContactPage() {
       }
 
       setStatus("success");
-    } catch (err: any) {
+    } catch (_err: unknown) {
       // In demo static mode, gracefully show success feedback
       setStatus("success");
     }

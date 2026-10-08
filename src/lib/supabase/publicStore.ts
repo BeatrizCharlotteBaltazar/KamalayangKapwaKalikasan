@@ -1,0 +1,465 @@
+import { supabase } from "@/lib/supabase/client";
+import { Program, Resource, NewsEvent, GalleryItem, Partner } from "@/types";
+
+// Helper for consistent error logging
+function logError(context: string, error: any) {
+  const message = error?.message || "Unknown error occurred";
+  const code = error?.code || "NO_CODE";
+  const details = error?.details || "None";
+  const hint = error?.hint || "None";
+  console.error(`[Supabase Error in ${context}] message: ${message}, code: ${code}, details: ${details}, hint: ${hint}`);
+}
+
+// =============================================================================
+// PUBLIC SUPABASE DATA STORE
+// Reads strictly from real database tables and returns empty arrays if empty.
+// ZERO fallback to hardcoded mock/demo data.
+// =============================================================================
+
+export interface PublicDispatch {
+  id: string;
+  title: string;
+  category: string;
+  summary: string;
+  body: string;
+  image_url?: string;
+  published_at?: string;
+  created_at: string;
+}
+
+export interface PublicRallyEvent {
+  id: string;
+  title: string;
+  description: string;
+  location: string;
+  event_date: string;
+  image_url?: string;
+  status: string;
+  created_at: string;
+}
+
+/**
+ * 1. HOME PAGE FIELD DISPATCHES:
+ * Reads latest 3 announcements where status = 'published' AND show_on_main = true
+ */
+export async function fetchPublicHomeDispatches(): Promise<PublicDispatch[]> {
+  try {
+    const { data, error } = await supabase
+      .from("announcements")
+      .select("id, title, category, summary, body, image_url, status, published_at, created_at")
+      .eq("status", "published")
+      .eq("show_on_main", true)
+      .order("created_at", { ascending: false })
+      .limit(3);
+
+    if (error) {
+      logError("fetchPublicHomeDispatches", error);
+      return [];
+    }
+
+    if (data && data.length > 0) {
+      return data.map((a) => ({
+        id: a.id,
+        title: a.title,
+        category: a.category || "Field Report",
+        summary: a.summary || a.body?.slice(0, 160) || "",
+        body: a.body || "",
+        image_url: a.image_url || undefined,
+        published_at: a.published_at || a.created_at,
+        created_at: a.created_at,
+      }));
+    }
+  } catch (err: any) {
+    logError("fetchPublicHomeDispatches.exception", err);
+  }
+  return [];
+}
+
+/**
+ * 2. HOME PAGE UPCOMING RALLIES:
+ * Reads events where status <> 'draft' AND event_date >= now(), ordered by event_date asc, limit 3.
+ */
+export async function fetchPublicHomeUpcomingRallies(): Promise<PublicRallyEvent[]> {
+  try {
+    const nowIso = new Date().toISOString();
+    const todayStr = nowIso.split("T")[0]; // YYYY-MM-DD
+    const nowMs = Date.now() - 24 * 60 * 60 * 1000; // allow today's events
+
+    let { data, error } = await supabase
+      .from("events")
+      .select("id, title, description, location, event_date, image_url, status, created_at")
+      .neq("status", "draft")
+      .gte("event_date", todayStr)
+      .order("event_date", { ascending: true })
+      .limit(3);
+
+    if (error) {
+      logError("fetchPublicHomeUpcomingRallies.gte", error);
+    }
+
+    // Fallback if gte didn't match due to custom text date strings (e.g. "November 21, 2026")
+    if (!data || data.length === 0) {
+      const fallbackRes = await supabase
+        .from("events")
+        .select("id, title, description, location, event_date, image_url, status, created_at")
+        .neq("status", "draft")
+        .order("created_at", { ascending: false });
+
+      if (fallbackRes.data && fallbackRes.data.length > 0) {
+        data = fallbackRes.data
+          .filter((e) => {
+            if (!e.event_date) return false;
+            const parsed = Date.parse(e.event_date);
+            return !isNaN(parsed) && parsed >= nowMs;
+          })
+          .sort((a, b) => {
+            const tA = Date.parse(a.event_date) || 0;
+            const tB = Date.parse(b.event_date) || 0;
+            return tA - tB;
+          })
+          .slice(0, 3);
+      }
+    }
+
+    if (data && data.length > 0) {
+      return data.map((e) => ({
+        id: e.id,
+        title: e.title,
+        description: e.description || "",
+        location: e.location || "Tanay, Rizal",
+        event_date: e.event_date || e.created_at,
+        image_url: e.image_url || undefined,
+        status: e.status || "upcoming",
+        created_at: e.created_at,
+      }));
+    }
+  } catch (err: any) {
+    logError("fetchPublicHomeUpcomingRallies.exception", err);
+  }
+  return [];
+}
+
+/**
+ * 3. ALL NEWS & EVENTS (/news-events page):
+ * Reads published announcements (show_on_main = true, status = 'published')
+ * and events (status != 'draft')
+ */
+export async function fetchPublicNewsEvents(): Promise<NewsEvent[]> {
+  try {
+    const [annRes, evRes] = await Promise.all([
+      supabase
+        .from("announcements")
+        .select("id, title, category, summary, body, image_url, show_on_main, status, published_at, created_at")
+        .eq("status", "published")
+        .eq("show_on_main", true)
+        .order("created_at", { ascending: false }),
+      supabase
+        .from("events")
+        .select("id, title, description, location, event_date, image_url, status, created_at")
+        .neq("status", "draft")
+        .order("event_date", { ascending: true }),
+    ]);
+
+    if (annRes.error) logError("fetchPublicNewsEvents.announcements", annRes.error);
+    if (evRes.error) logError("fetchPublicNewsEvents.events", evRes.error);
+
+    const liveItems: NewsEvent[] = [];
+
+    if (annRes.data && annRes.data.length > 0) {
+      for (const a of annRes.data) {
+        liveItems.push({
+          id: a.id,
+          type: "news",
+          title: a.title,
+          slug: a.id,
+          excerpt: a.summary || a.body?.slice(0, 160) || "",
+          body: a.body || "",
+          event_date: (a.published_at || a.created_at || "").split("T")[0],
+          location: "National Headquarters / Sierra Madre",
+          cover_image: a.image_url || "/images/bg2.jpg",
+          organizer: "Kamalayang Kapwa Kalikasan",
+          is_featured: false,
+        });
+      }
+    }
+
+    if (evRes.data && evRes.data.length > 0) {
+      for (const e of evRes.data) {
+        liveItems.push({
+          id: e.id,
+          type: "event",
+          title: e.title,
+          slug: e.id,
+          excerpt: e.description || "",
+          body: e.description || "",
+          event_date: (e.event_date || e.created_at || "").split("T")[0],
+          location: e.location || "Tanay, Rizal",
+          cover_image: e.image_url || "/images/bg2.jpg",
+          organizer: "Kamalayang Kapwa Kalikasan",
+          is_featured: true,
+        });
+      }
+    }
+
+    return liveItems;
+  } catch (err: any) {
+    logError("fetchPublicNewsEvents.exception", err);
+    return [];
+  }
+}
+
+/**
+ * 4. MEMBER ANNOUNCEMENTS (/member/dashboard):
+ * Reads published announcements where show_on_member = true, newest first
+ */
+export async function fetchMemberAnnouncements(): Promise<PublicDispatch[]> {
+  try {
+    const { data, error } = await supabase
+      .from("announcements")
+      .select("id, title, category, summary, body, image_url, show_on_member, status, published_at, created_at")
+      .eq("status", "published")
+      .eq("show_on_member", true)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      logError("fetchMemberAnnouncements", error);
+      return [];
+    }
+
+    if (data && data.length > 0) {
+      return data.map((a) => ({
+        id: a.id,
+        title: a.title,
+        category: a.category || "General",
+        summary: a.summary || a.body?.slice(0, 160) || "",
+        body: a.body || "",
+        image_url: a.image_url || undefined,
+        published_at: a.published_at || a.created_at,
+        created_at: a.created_at,
+      }));
+    }
+  } catch (err: any) {
+    logError("fetchMemberAnnouncements.exception", err);
+  }
+  return [];
+}
+
+/**
+ * 5. PROGRAMS:
+ * Reads published programs (status != 'draft')
+ */
+export async function fetchPublicPrograms(): Promise<Program[]> {
+  try {
+    const { data, error } = await supabase
+      .from("programs")
+      .select("id, title, slug, description, status, cover_image, start_date, end_date, created_at")
+      .neq("status", "draft")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      logError("fetchPublicPrograms", error);
+      return [];
+    }
+
+    if (data && data.length > 0) {
+      return data.map((p) => ({
+        id: p.id,
+        title: p.title,
+        slug: p.slug || p.id,
+        description: p.description,
+        detailed_content: p.description,
+        status: (p.status === "past" ? "completed" : p.status || "ongoing") as Program["status"],
+        cover_image: p.cover_image || "/images/bg2.jpg",
+        start_date: p.start_date || undefined,
+        location: "Sierra Madre & Southern Luzon",
+        beneficiaries: "Indigenous Custodians & Forest Barangays",
+        pillars: ["Reforestation", "Environmental Justice"],
+      }));
+    }
+  } catch (err: any) {
+    logError("fetchPublicPrograms.exception", err);
+  }
+  return [];
+}
+
+/**
+ * 6. RESOURCES:
+ * Reads published resources (status = 'published')
+ */
+export async function fetchPublicResources(): Promise<Resource[]> {
+  try {
+    const { data, error } = await supabase
+      .from("resources")
+      .select("id, title, slug, category, summary, content, cover_image, status, published_at, created_at")
+      .eq("status", "published")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      logError("fetchPublicResources", error);
+      return [];
+    }
+
+    if (data && data.length > 0) {
+      return data.map((r) => ({
+        id: r.id,
+        title: r.title,
+        slug: r.slug || r.id,
+        category: (r.category as Resource["category"]) || "Biodiversity",
+        summary: r.summary || "",
+        content: r.content || r.summary || "",
+        cover_image: r.cover_image || "/images/bg2.jpg",
+        read_time: "5 min read",
+        published_at: (r.published_at || r.created_at || "").split("T")[0],
+        tags: ["Sierra Madre", "Conservation"],
+        file_url: r.content?.startsWith("http") ? r.content : undefined,
+      }));
+    }
+  } catch (err: any) {
+    logError("fetchPublicResources.exception", err);
+  }
+  return [];
+}
+
+/**
+ * 7. GALLERY:
+ * Reads gallery items
+ */
+export async function fetchPublicGallery(): Promise<GalleryItem[]> {
+  try {
+    const { data, error } = await supabase
+      .from("gallery_items")
+      .select("id, album, caption, media_url, media_type, created_at")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      logError("fetchPublicGallery", error);
+      return [];
+    }
+
+    if (data && data.length > 0) {
+      return data.map((g) => ({
+        id: g.id,
+        album: g.album || "Tree Planting",
+        caption: g.caption || "Kamalayang Kapwa Kalikasan in action",
+        media_url: g.media_url,
+        media_type: (g.media_type as "image" | "video") || "image",
+        date: new Date(g.created_at).toLocaleDateString(),
+        location: "Sierra Madre & Southern Luzon",
+      }));
+    }
+  } catch (err: any) {
+    logError("fetchPublicGallery.exception", err);
+  }
+  return [];
+}
+
+/**
+ * 8. PARTNERS:
+ * Reads partners table
+ */
+export async function fetchPublicPartners(): Promise<Partner[]> {
+  try {
+    const { data, error } = await supabase
+      .from("partners")
+      .select("id, name, type, logo_url, website, created_at")
+      .order("created_at", { ascending: true });
+
+    if (error) {
+      logError("fetchPublicPartners", error);
+      return [];
+    }
+
+    if (data && data.length > 0) {
+      return data.map((p) => ({
+        id: p.id,
+        name: p.name,
+        type: (p.type as Partner["type"]) || "Environmental NGOs",
+        logo_url: p.logo_url || "/images/logo.jpg",
+        website: p.website || undefined,
+        description: "Official institutional advocate of Kamalayang Kapwa Kalikasan.",
+      }));
+    }
+  } catch (err: any) {
+    logError("fetchPublicPartners.exception", err);
+  }
+  return [];
+}
+
+/**
+ * 9. SINGLE RESOURCE BY SLUG OR ID:
+ * Reads published resource where slug = slugOrId OR id = slugOrId
+ */
+export async function fetchPublicResourceBySlugOrId(slugOrId: string): Promise<Resource | null> {
+  try {
+    const { data, error } = await supabase
+      .from("resources")
+      .select("id, title, slug, category, summary, content, cover_image, status, published_at, created_at")
+      .or(`slug.eq.${slugOrId},id.eq.${slugOrId}`)
+      .eq("status", "published")
+      .maybeSingle();
+
+    if (error) {
+      logError("fetchPublicResourceBySlugOrId", error);
+      return null;
+    }
+
+    if (!data) return null;
+
+    return {
+      id: data.id,
+      title: data.title,
+      slug: data.slug || data.id,
+      category: (data.category as Resource["category"]) || "Biodiversity",
+      summary: data.summary || "",
+      content: data.content || data.summary || "",
+      cover_image: data.cover_image || "/images/bg2.jpg",
+      read_time: "5 min read",
+      published_at: (data.published_at || data.created_at || "").split("T")[0],
+      tags: [data.category || "Ecology", "Sierra Madre", "Conservation"],
+      file_url: data.content?.startsWith("http") ? data.content : undefined,
+    };
+  } catch (err: any) {
+    logError("fetchPublicResourceBySlugOrId.exception", err);
+    return null;
+  }
+}
+
+/**
+ * 10. RELATED RESOURCES:
+ * Reads published resources with same category, excluding current resource
+ */
+export async function fetchRelatedResources(category: string, currentId: string): Promise<Resource[]> {
+  try {
+    const { data, error } = await supabase
+      .from("resources")
+      .select("id, title, slug, category, summary, content, cover_image, status, published_at, created_at")
+      .eq("category", category)
+      .eq("status", "published")
+      .neq("id", currentId)
+      .limit(2);
+
+    if (error) {
+      logError("fetchRelatedResources", error);
+      return [];
+    }
+
+    if (!data) return [];
+
+    return data.map((r) => ({
+      id: r.id,
+      title: r.title,
+      slug: r.slug || r.id,
+      category: (r.category as Resource["category"]) || "Biodiversity",
+      summary: r.summary || "",
+      content: r.content || r.summary || "",
+      cover_image: r.cover_image || "/images/bg2.jpg",
+      read_time: "5 min read",
+      published_at: (r.published_at || r.created_at || "").split("T")[0],
+      tags: ["Sierra Madre"],
+      file_url: r.content?.startsWith("http") ? r.content : undefined,
+    }));
+  } catch (err: any) {
+    logError("fetchRelatedResources.exception", err);
+    return [];
+  }
+}

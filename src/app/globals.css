@@ -116,3 +116,23 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #22C55E;
 }
+
+/* Continuous moving marquee for carousel */
+@keyframes continuousMarquee {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-continuous-marquee {
+  display: flex;
+  width: max-content;
+  animation: continuousMarquee 35s linear infinite;
+}
+
+.animate-continuous-marquee:hover {
+  animation-play-state: paused;
+}

@@ -28,13 +28,35 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // In step 1-2, acknowledge successfully. In step 3-4, writes to Supabase volunteers table.
+    const programName = typeof body?.program === "string" ? body.program : "Sierra Madre Reforestation";
+    const { supabase } = await import("@/lib/supabase/client");
+    const { error: dbError } = await supabase.from("volunteers").insert([{
+      full_name: validated.data.full_name,
+      email: validated.data.email,
+      phone: validated.data.phone,
+      location: validated.data.location || "",
+      program: programName,
+      skills: validated.data.interests || [],
+      availability: validated.data.availability || "",
+      message: validated.data.message || "",
+      status: "Pending Review",
+    }]);
+
+    if (dbError) {
+      console.error("Supabase volunteers insert error:", {
+        message: dbError.message,
+        code: dbError.code,
+        details: dbError.details,
+        hint: dbError.hint,
+      });
+    }
+
     return NextResponse.json({
       success: true,
       message: "Matagumpay na naitala ang iyong volunteer sign-up!",
       data: validated.data,
     });
-  } catch (error: any) {
+  } catch (_error: unknown) {
     return NextResponse.json(
       { error: "May naganap na aberya sa server." },
       { status: 500 }

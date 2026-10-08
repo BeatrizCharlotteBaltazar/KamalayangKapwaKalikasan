@@ -1,56 +1,68 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, MapPin, Sparkles, Flame, Heart, Shield, Trees } from "lucide-react";
-import { programsData } from "@/lib/data";
+import { fetchPublicPrograms } from "@/lib/supabase/publicStore";
 import { Button } from "@/components/ui/button";
 
 export function FeaturedPrograms() {
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [programs, setPrograms] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Curate programs including rallies & civil mobilizations
-  const activePrograms = [
-    {
-      id: "prog-sierra-madre",
-      title: "Bantay Sierra Madre: Native Rainforest Restoration",
-      tagline: "Assisted natural regeneration and native tree-growing with indigenous Dumagat custodians.",
-      location: "Tanay & General Nakar, Sierra Madre Mountain Range",
-      impact: "14,800+ Endemic saplings monitored with 85% survival rate",
-      color: "#22C55E",
-      themeBadge: "bg-[#22C55E]/20 text-[#22C55E] border-[#22C55E]/40",
-      buttonColor: "bg-[#22C55E] hover:bg-[#16A34A] text-slate-950 font-black",
-      image: "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=1200&q=80",
-      category: "Forest & Watershed Defense",
-    },
-    {
-      id: "prog-climate-rallies",
-      title: "March for Nature & Humanity: Climate Justice Rallies",
-      tagline: "Peaceful civic mobilizations, student walkouts, and environmental justice marches.",
-      location: "Metro Manila, Cavite & Regional Centers",
-      impact: "8+ Mobilizations uniting over 3,200 youth and community allies",
-      color: "#DC2626",
-      themeBadge: "bg-[#DC2626]/20 text-[#EF4444] border-[#DC2626]/40",
-      buttonColor: "bg-[#DC2626] hover:bg-[#B91C1C] text-white font-extrabold",
-      image: "https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=1200&q=80",
-      category: "Civil Mobilization & Rallies",
-    },
-    {
-      id: "prog-coastal-blue-carbon",
-      title: "Daloy ng Buhay: Mangrove Buffers & Coastal Defense",
-      tagline: "Coastal reforestation and marine plastic diversion protecting vulnerable fishing barangays.",
-      location: "Manila Bay Coastlines & Cavite Estuaries",
-      impact: "18.4 Tons of ocean plastic diverted; 5,000 mangrove propagules planted",
-      color: "#2563EB",
-      themeBadge: "bg-[#2563EB]/20 text-[#60A5FA] border-[#2563EB]/40",
-      buttonColor: "bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-extrabold",
-      image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80",
-      category: "Blue Carbon & Ocean Protection",
-    },
-  ];
+  const loadData = () => {
+    fetchPublicPrograms().then((items) => {
+      if (items && items.length > 0) {
+        setPrograms(
+          items.slice(0, 3).map((p, idx) => ({
+            id: p.id,
+            title: p.title,
+            tagline: p.description,
+            location: p.location || "Sierra Madre Mountain Range",
+            impact: "Community-driven reforestation & environmental stewardship",
+            color: idx === 1 ? "#DC2626" : idx === 2 ? "#2563EB" : "#22C55E",
+            themeBadge:
+              idx === 1
+                ? "bg-[#DC2626]/20 text-[#EF4444] border-[#DC2626]/40"
+                : idx === 2
+                ? "bg-[#2563EB]/20 text-[#60A5FA] border-[#2563EB]/40"
+                : "bg-[#22C55E]/20 text-[#22C55E] border-[#22C55E]/40",
+            buttonColor:
+              idx === 1
+                ? "bg-[#DC2626] hover:bg-[#B91C1C] text-white font-extrabold"
+                : idx === 2
+                ? "bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-extrabold"
+                : "bg-[#22C55E] hover:bg-[#16A34A] text-slate-950 font-black",
+            image: p.cover_image || "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=1200&q=80",
+            category: "Ecosystem Restoration",
+          }))
+        );
+      } else {
+        setPrograms([]);
+      }
+      setIsLoading(false);
+    });
+  };
 
-  const current = activePrograms[selectedIndex];
+  useEffect(() => {
+    loadData();
+
+    const handleUpdate = () => {
+      loadData();
+    };
+
+    window.addEventListener("kkk_content_updated", handleUpdate);
+    window.addEventListener("storage", handleUpdate);
+    return () => {
+      window.removeEventListener("kkk_content_updated", handleUpdate);
+      window.removeEventListener("storage", handleUpdate);
+    };
+  }, []);
+
+  const displayedPrograms = programs;
+  const current = displayedPrograms[selectedIndex] || displayedPrograms[0];
 
   return (
     <section className="py-16 md:py-24 relative overflow-hidden text-white">
@@ -83,12 +95,28 @@ export function FeaturedPrograms() {
           </Link>
         </div>
 
-        {/* Dynamic Editorial Split (No repetitive card grid) */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+        {/* Dynamic Editorial Split */}
+        {displayedPrograms.length === 0 ? (
+          <div className="rounded-3xl p-12 text-center bg-[#08180E]/85 border border-emerald-500/20 text-slate-300 shadow-2xl space-y-3">
+            <Trees className="w-12 h-12 text-emerald-400 mx-auto opacity-70" />
+            <h3 className="font-heading text-xl font-bold text-white">No active programs published yet</h3>
+            <p className="text-xs sm:text-sm text-slate-300 max-w-md mx-auto leading-relaxed">
+              Our grassroots campaigns and reforestation drives in the Sierra Madre are being scheduled. Check back soon or register as a volunteer to get involved.
+            </p>
+            <div className="pt-2">
+              <Link href="/get-involved">
+                <Button className="bg-[#22C55E] hover:bg-[#16A34A] text-slate-950 font-black text-xs px-5 py-2 rounded-xl">
+                  Magpatala Bilang Volunteer &rarr;
+                </Button>
+              </Link>
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
           
           {/* LEFT: Interactive Program Selection Flow (5 cols) */}
           <div className="lg:col-span-5 flex flex-col justify-between space-y-3">
-            {activePrograms.map((prog, index) => {
+            {displayedPrograms.map((prog, index) => {
               const isSelected = selectedIndex === index;
               return (
                 <button
@@ -188,6 +216,7 @@ export function FeaturedPrograms() {
           </div>
 
         </div>
+        )}
 
       </div>
     </section>

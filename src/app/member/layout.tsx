@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, LogOut, User, Trees, Heart, Calendar } from "lucide-react";
 import { signOutUser } from "@/lib/auth";
+import { MemberNotificationsDropdown } from "@/components/member/MemberNotificationsDropdown";
 
 export default function MemberLayout({
   children,
@@ -52,6 +53,9 @@ export default function MemberLayout({
           </div>
 
           <div className="flex items-center gap-3 text-xs">
+            {/* Real-time Announcements Notifications Bell */}
+            <MemberNotificationsDropdown />
+
             <Link
               href="/"
               className="text-slate-300 hover:text-white hidden sm:inline-flex items-center gap-1 font-semibold"

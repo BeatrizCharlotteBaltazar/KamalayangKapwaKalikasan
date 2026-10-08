@@ -120,7 +120,7 @@ export default function LoginPage() {
           disabled={isLoading}
           className="w-full bg-[#B07D48] hover:bg-[#9E6E3C] text-[#1A1108] font-extrabold py-3.5 rounded-xl shadow-xl text-sm transition-all cursor-pointer flex items-center justify-center gap-2 hover:scale-[1.02]"
         >
-          <span>{isLoading ? "Signing in to Supabase..." : "Sign In to Portal"}</span>
+          <span>{isLoading ? "Signing in..." : "Sign In to Portal"}</span>
           <ArrowRight className="w-4 h-4 stroke-[2.5]" />
         </Button>
       </form>

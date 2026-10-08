@@ -12,8 +12,8 @@ import {
   Download,
   Sparkles
 } from "lucide-react";
-import { resourcesData } from "@/lib/data";
-import { ResourceCategory } from "@/types";
+import { fetchPublicResources } from "@/lib/supabase/publicStore";
+import { Resource, ResourceCategory } from "@/types";
 import { formatDate } from "@/lib/utils";
 
 const categories: ("All" | ResourceCategory)[] = [
@@ -28,8 +28,35 @@ const categories: ("All" | ResourceCategory)[] = [
 export default function ResourcesPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [resources, setResources] = useState<Resource[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const filteredResources = resourcesData.filter((item) => {
+  React.useEffect(() => {
+    let isMounted = true;
+    fetchPublicResources().then((items) => {
+      if (isMounted) {
+        setResources(items || []);
+        setIsLoading(false);
+      }
+    });
+
+    const handleUpdate = () => {
+      fetchPublicResources().then((items) => {
+        if (isMounted) {
+          setResources(items || []);
+        }
+      });
+    };
+    window.addEventListener("kkk_content_updated", handleUpdate);
+    window.addEventListener("storage", handleUpdate);
+    return () => {
+      isMounted = false;
+      window.removeEventListener("kkk_content_updated", handleUpdate);
+      window.removeEventListener("storage", handleUpdate);
+    };
+  }, []);
+
+  const filteredResources = resources.filter((item) => {
     const matchesCategory =
       selectedCategory === "All" || item.category === selectedCategory;
     const matchesSearch =

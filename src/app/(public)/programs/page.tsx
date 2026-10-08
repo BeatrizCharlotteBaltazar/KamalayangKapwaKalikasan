@@ -9,19 +9,47 @@ import {
   Calendar, 
   Users, 
   CheckCircle, 
-  Sparkles,
-  ChevronRight,
-  Flame,
-  Heart
+  Sparkles, 
+  ChevronRight, 
+  Flame, 
+  Heart 
 } from "lucide-react";
-import { programsData } from "@/lib/data";
+import { fetchPublicPrograms } from "@/lib/supabase/publicStore";
+import { Program } from "@/types";
 import { Button } from "@/components/ui/button";
 
 export default function ProgramsPage() {
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [programs, setPrograms] = useState<Program[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const filteredPrograms = programsData.filter((p) => {
+  React.useEffect(() => {
+    let isMounted = true;
+    fetchPublicPrograms().then((items) => {
+      if (isMounted) {
+        setPrograms(items || []);
+        setIsLoading(false);
+      }
+    });
+
+    const handleUpdate = () => {
+      fetchPublicPrograms().then((items) => {
+        if (isMounted) {
+          setPrograms(items || []);
+        }
+      });
+    };
+    window.addEventListener("kkk_content_updated", handleUpdate);
+    window.addEventListener("storage", handleUpdate);
+    return () => {
+      isMounted = false;
+      window.removeEventListener("kkk_content_updated", handleUpdate);
+      window.removeEventListener("storage", handleUpdate);
+    };
+  }, []);
+
+  const filteredPrograms = programs.filter((p) => {
     if (selectedStatus === "all") return true;
     return p.status === selectedStatus;
   });
@@ -50,7 +78,7 @@ export default function ProgramsPage() {
         {/* Filter Bar */}
         <div className="flex flex-wrap items-center justify-center gap-2">
           {[
-            { id: "all", label: `All Programs (${programsData.length})` },
+            { id: "all", label: `All Programs (${programs.length})` },
             { id: "ongoing", label: "Active Field Work" },
             { id: "upcoming", label: "Upcoming Launches" },
             { id: "completed", label: "Completed Milestones" },
@@ -70,7 +98,27 @@ export default function ProgramsPage() {
         </div>
 
         {/* Programs Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {filteredPrograms.length === 0 ? (
+          <div className="text-center py-16 bg-[#08180E]/85 rounded-3xl border border-emerald-500/20 p-8 space-y-3 shadow-2xl">
+            <Trees className="w-12 h-12 text-emerald-400 mx-auto opacity-60" />
+            <h3 className="font-heading text-lg font-bold text-white">
+              Walang aktibong programa sa kasalukuyan
+            </h3>
+            <p className="text-xs text-slate-300 max-w-md mx-auto">
+              Kasalukuyang naghahanda ang aming mga boluntaryo para sa susunod na mga inisyatiba sa Sierra Madre at komunidad.
+            </p>
+            {selectedStatus !== "all" && (
+              <button
+                type="button"
+                onClick={() => setSelectedStatus("all")}
+                className="text-xs font-bold text-emerald-400 hover:underline cursor-pointer"
+              >
+                Ipakita ang Lahat ng Programa
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {filteredPrograms.map((prog) => {
             const isExpanded = expandedId === prog.id;
 
@@ -190,6 +238,7 @@ export default function ProgramsPage() {
             );
           })}
         </div>
+        )}
 
         {/* Bottom Partnership Banner */}
         <div className="rounded-3xl bg-gradient-to-r from-[#0E2817] via-[#08180E] to-[#040E07] border border-emerald-500/30 text-white p-8 sm:p-10 text-center space-y-4 shadow-2xl">

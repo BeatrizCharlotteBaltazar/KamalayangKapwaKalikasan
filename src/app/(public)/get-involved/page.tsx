@@ -95,7 +95,7 @@ export default function GetInvolvedPage() {
       }
 
       setStatus("success");
-    } catch (err: any) {
+    } catch (_err: unknown) {
       // In demo static mode, gracefully show success feedback
       setStatus("success");
     }

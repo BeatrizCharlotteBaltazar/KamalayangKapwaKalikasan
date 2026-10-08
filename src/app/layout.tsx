@@ -69,6 +69,8 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
+import { AuthProvider } from "@/components/providers/AuthProvider";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -86,7 +88,9 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Alice&display=swap" rel="stylesheet" />
       </head>
       <body className="min-h-screen flex flex-col bg-[#07140B] text-[#E2ECE4] antialiased">
-        {children}
+        <AuthProvider>
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );

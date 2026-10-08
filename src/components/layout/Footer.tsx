@@ -16,9 +16,10 @@ import {
   Sparkles
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { siteSettings } from "@/lib/data";
+import { useSiteSettings } from "@/lib/siteSettings";
 
 export function Footer() {
+  const siteSettings = useSiteSettings();
   const [email, setEmail] = useState("");
   const [consent, setConsent] = useState(false);
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
@@ -270,6 +271,10 @@ export function Footer() {
           </p>
 
           <div className="flex items-center gap-4">
+            <Link href="/contact" className="hover:text-white transition-colors">
+              Contact Us
+            </Link>
+            <span>•</span>
             <Link href="/privacy-policy" className="hover:text-white transition-colors">
               Privacy Policy
             </Link>

@@ -18,12 +18,13 @@ import {
   officersData, 
   organizationVision, 
   organizationMission, 
-  missionPathways,
-  siteSettings 
+  missionPathways 
 } from "@/lib/data";
+import { useSiteSettings } from "@/lib/siteSettings";
 import { Button } from "@/components/ui/button";
 
 export default function AboutPage() {
+  const siteSettings = useSiteSettings();
   return (
     <div className="py-12 md:py-20 relative overflow-hidden text-white bg-subpage-forest1 min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">

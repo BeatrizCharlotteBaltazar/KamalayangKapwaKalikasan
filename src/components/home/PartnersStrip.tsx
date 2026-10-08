@@ -1,9 +1,27 @@
-import React from "react";
+"use client";
+
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { partnersData } from "@/lib/data";
+import { fetchPublicPartners } from "@/lib/supabase/publicStore";
+import { Partner } from "@/types";
 import { Handshake, ArrowRight, ShieldCheck } from "lucide-react";
 
 export function PartnersStrip() {
+  const [partners, setPartners] = useState<Partner[]>([]);
+
+  useEffect(() => {
+    let isMounted = true;
+    fetchPublicPartners().then((live) => {
+      if (isMounted) setPartners(live || []);
+    });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  if (partners.length === 0) {
+    return null;
+  }
   return (
     <section className="py-16 relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -27,7 +45,7 @@ export function PartnersStrip() {
 
         {/* Partners Badges Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
-          {partnersData.slice(0, 4).map((partner, index) => {
+          {partners.slice(0, 4).map((partner, index) => {
             const badgeColor = 
               index === 0 ? "bg-emerald-50 text-[#2E5E34] border-emerald-200" :
               index === 1 ? "bg-blue-50 text-[#0C3B7C] border-blue-200" :

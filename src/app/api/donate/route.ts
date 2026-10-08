@@ -27,6 +27,28 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const paymentMethod = typeof body?.payment_method === "string" ? body.payment_method : "GCash";
+    const { supabase } = await import("@/lib/supabase/client");
+    const { error: dbError } = await supabase.from("donations").insert([{
+      donor_name: validated.data.donor_name,
+      email: validated.data.email,
+      amount: validated.data.amount,
+      trees: Math.floor(Number(validated.data.amount) / 250),
+      payment_method: paymentMethod,
+      reference_no: validated.data.reference_no,
+      proof_url: validated.data.proof_url || null,
+      status: "Pending",
+    }]);
+
+    if (dbError) {
+      console.error("Supabase donations insert error:", {
+        message: dbError.message,
+        code: dbError.code,
+        details: dbError.details,
+        hint: dbError.hint,
+      });
+    }
+
     return NextResponse.json({
       success: true,
       message: "Matagumpay na naitala ang impormasyon ng inyong donasyon. Ito ay susuriin (Pending).",

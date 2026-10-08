@@ -19,7 +19,7 @@ import {
   Sparkles,
   Lock
 } from "lucide-react";
-import { siteSettings } from "@/lib/data";
+import { useSiteSettings } from "@/lib/siteSettings";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
@@ -31,6 +31,7 @@ const presetAmounts = [
 ];
 
 export default function DonatePage() {
+  const siteSettings = useSiteSettings();
   const router = useRouter();
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
@@ -120,7 +121,7 @@ export default function DonatePage() {
       }
 
       router.push("/donate/thank-you");
-    } catch (err: any) {
+    } catch (_err: unknown) {
       // In demo static mode, gracefully navigate to thank you
       router.push("/donate/thank-you");
     }
