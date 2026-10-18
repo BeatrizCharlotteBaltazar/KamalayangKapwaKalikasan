@@ -185,12 +185,20 @@ export const officersData: Officer[] = [
     quote: "Ang tunay na malasakit sa kapwa Pilipino ay nakatali sa ating pag-aaruga sa lupang nagpapakain sa atin.",
   },
   {
-    name: "Jahziel Tayco Ferrer",
+    name: "James Aron Mangun",
     role: "Vice President",
     category: "Executive Leadership",
     bio: "Katuwang sa pamamahala ng mga inisyatiba sa komunidad, ugnayang panlabas, at pagpapakilos ng mga boluntaryo.",
+    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=600&q=80",
+    quote: "Sa proactive na aksyon at bayanihan, kayang ibalik ang sigla ng ating mga kagubatan at baybayin.",
+  },
+  {
+    name: "Jahziel Tayco Ferrer",
+    role: "Corporate Secretary",
+    category: "Executive Leadership",
+    bio: "A licensed teacher and educator from the Province of Cavite, Philippines. She is an advocate for environmental protection and community development. Through her involvement in various initiatives, she seeks to promote environmental awareness, sustainability, and positive social change.",
     image: "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=600&q=80",
-    quote: "Sa proactive na aksyon, tapat na pamamahala, at bayanihan, kayang ibalik ang sigla ng ating mga kagubatan at baybayin.",
+    quote: "Ang tapat na pamamahala at transparency ang pundasyon ng pangmatagalang tiwala ng sambayanan.",
   },
   {
     name: "Zeno \"Nonoy\" O. Zuniga",
